@@ -59,3 +59,14 @@ class Luminous(SegmentationDataset):
     DATASET_NAME = "Luminous"
     IMG_DIRECTORY = "B-mode"
     MASK_DIRECTORY = "Masks"
+
+    def __init__(self, root: str = ".data", transform: Optional[Callable] = None, target_transform: Optional[Callable] = None):
+        super(Luminous, self).__init__()
+        self.root = root
+        self.transform = transform
+        self.target_transform = target_transform
+
+        self.masks = list(
+            sorted(os.listdir(os.path.join(root, self.DATASET_NAME, self.MASK_DIRECTORY))))
+        self.imgs = [mask[:mask.rfind('_') + 1] +
+                     'Bmode.tif' for mask in self.masks]

@@ -1,6 +1,9 @@
 [MASTER]
-extension-pkg-whitelist=numpy,torch
+extension-pkg-whitelist=numpy,torch,datetime
 
 [TYPECHECK]
-ignored-modules=numpy,torch
-ignored-classes=numpy,torch
+ignored-modules=numpy,torch,datetime
+ignored-classes=numpy,torch,datetime
+
+[VARIABLES]
+allowed-redefined-builtins=input
