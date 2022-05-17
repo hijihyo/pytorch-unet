@@ -5,15 +5,15 @@ import torchvision
 from PIL import Image
 
 
-class Luminous(torch.utils.data.Dataset):
-    """PyTorch dataset for Luminous ultrasound image database"""
+class SegmentationDataset(torch.utils.data.Dataset):
+    """PyTorch template dataset for segmentation"""
 
-    DATASET_NAME = "Luminous"
-    IMG_DIRECTORY = "B-mode"
-    MASK_DIRECTORY = "Masks"
+    DATASET_NAME = None
+    IMG_DIRECTORY = None
+    MASK_DIRECTORY = None
 
     def __init__(self, root: str = ".data", transform: Optional[Callable] = None, target_transform: Optional[Callable] = None):
-        super(Luminous, self).__init__()
+        super(SegmentationDataset, self).__init__()
         self.root = root
         self.transform = transform
         self.target_transform = target_transform
@@ -43,3 +43,19 @@ class Luminous(torch.utils.data.Dataset):
 
     def __len__(self):
         return len(self.imgs)
+
+
+class ISBI2012(SegmentationDataset):
+    """PyTorch dataset for ISBI 2012 EM segmentation challenge"""
+
+    DATASET_NAME = "ISBI2012"
+    IMG_DIRECTORY = "images"
+    MASK_DIRECTORY = "labels"
+
+
+class Luminous(SegmentationDataset):
+    """PyTorch dataset for Luminous ultrasound image database"""
+
+    DATASET_NAME = "Luminous"
+    IMG_DIRECTORY = "B-mode"
+    MASK_DIRECTORY = "Masks"
