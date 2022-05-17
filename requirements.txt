@@ -35,6 +35,7 @@ torch==1.11.0
 torchdata==0.3.0
 torchvision==0.12.0
 tornado @ file:///opt/concourse/worker/volumes/live/05341796-4198-4ded-4a9a-332fde3cdfd1/volume/tornado_1606942323372/work
+tqdm @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_6cb3db64-b7e1-4db2-ab0b-f944920e5367lekntvc5/croots/recipe/tqdm_1650891088614/work
 typing_extensions @ file:///opt/conda/conda-bld/typing_extensions_1647553014482/work
 urllib3 @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_92f3a881-8cf4-469b-8319-736ffa3c6d61ordl4zjw/croots/recipe/urllib3_1650639998913/work
 wrapt @ file:///opt/concourse/worker/volumes/live/44cb0d08-9295-4ea1-6561-bec2dc079522/volume/wrapt_1638433869252/work
