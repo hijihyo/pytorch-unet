@@ -17,7 +17,7 @@ mkl-fft==1.3.1
 mkl-random @ file:///opt/concourse/worker/volumes/live/f196a661-8e33-4aac-63bc-efb2ff50e035/volume/mkl_random_1626186080069/work
 mkl-service==2.4.0
 munkres==1.1.4
-numpy @ file:///opt/concourse/worker/volumes/live/43e8b7ef-d1fd-45d0-62f1-c322c85dc996/volume/numpy_and_numpy_base_1650959338352/work
+numpy @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_e3f85f54-0572-4c0e-b190-4bc4766fc3fenewxarhq/croots/recipe/numpy_and_numpy_base_1652801682879/work
 packaging @ file:///tmp/build/80754af9/packaging_1637314298585/work
 Pillow==9.0.1
 platformdirs @ file:///tmp/build/80754af9/platformdirs_1638968569495/work
@@ -28,11 +28,13 @@ pyOpenSSL @ file:///opt/conda/conda-bld/pyopenssl_1643788558760/work
 pyparsing @ file:///tmp/build/80754af9/pyparsing_1635766073266/work
 PySocks @ file:///opt/concourse/worker/volumes/live/85a5b906-0e08-41d9-6f59-084cee4e9492/volume/pysocks_1594394636991/work
 python-dateutil @ file:///tmp/build/80754af9/python-dateutil_1626374649649/work
+pytz==2021.3
 requests @ file:///opt/conda/conda-bld/requests_1641824580448/work
 six @ file:///tmp/build/80754af9/six_1644875935023/work
 toml @ file:///tmp/build/80754af9/toml_1616166611790/work
 torch==1.11.0
 torchdata==0.3.0
+torchmetrics @ file:///home/conda/feedstock_root/build_artifacts/torchmetrics_1651830953557/work
 torchvision==0.12.0
 tornado @ file:///opt/concourse/worker/volumes/live/05341796-4198-4ded-4a9a-332fde3cdfd1/volume/tornado_1606942323372/work
 tqdm @ file:///private/var/folders/sy/f16zz6x50xz3113nwtb9bvq00000gp/T/abs_6cb3db64-b7e1-4db2-ab0b-f944920e5367lekntvc5/croots/recipe/tqdm_1650891088614/work
