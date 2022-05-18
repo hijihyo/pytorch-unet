@@ -28,29 +28,9 @@ def custom_transforms(img, mask):
     return img, mask
 
 
-dataset = Luminous()
-num_train = int(len(dataset) * 0.7)
-num_val = int(len(dataset) * 0.15)
-num_test = len(dataset) - num_train - num_val
-train_dataset, val_dataset, test_dataset = random_split(
-    dataset, [num_train, num_val, num_test])
-
-
-def collate_train_batch(batch):
-    """Collate each batch"""
-    img_list, mask_list = [], []
-    for img, mask in batch:
-        img, mask = custom_transforms(img, mask)
-        img = F.pad(img, (0, 0, 91, 91))  # (1, 796, 820)
-        img = img[:, :796, :-24]  # (1, 796, 796)
-        mask = F.pad(mask, (0, 0, 91, 91))  # (1, 796, 820)
-        mask = mask[:, :796, :-24]  # (1, 796, 796)
-        mask = mask[:, 92:-92, 92:-92]  # (1, 612, 612)
-        img_list.append(img.unsqueeze(0))  # (1, 1, 796, 796)
-        mask_list.append(mask)  # (1, 796, 796)
-    img_tensor = torch.cat(img_list)
-    mask_tensor = torch.cat(mask_list)
-    return img_tensor, mask_tensor
+train_dataset = Luminous(split="train", transforms=custom_transforms)
+val_dataset = Luminous(split="val")
+test_dataset = Luminous(split="test")
 
 
 def collate_batch(batch):
@@ -71,7 +51,7 @@ def collate_batch(batch):
 
 BATCH_SIZE = 4
 train_dataloader = DataLoader(
-    train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_train_batch)
+    train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
 val_dataloader = DataLoader(
     val_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
 test_dataloader = DataLoader(
