@@ -1,9 +1,11 @@
 """
 Train a U-Net model on Luminous database
 """
+import random
 from tqdm import tqdm
 import torch
 import torch.nn.functional as F
+import torchvision.transforms.functional as TF
 from torch import nn, optim
 from torch.utils.data import DataLoader, random_split
 # import torchvision
@@ -15,12 +17,40 @@ from model import UNet
 from utils import iterate_train, predict
 
 
+def custom_transforms(img, mask):
+    if random.random() > 0.5:
+        angle = random.randint(-30, 30)
+        translate = (0.4 * random.random(), 0.4 * random.random())
+        scale = 0.5 * random.random() + 0.5
+        shear = (random.randint(-30, 30), random.randint(-30, 30))
+        img = TF.affine(img, angle, translate, scale, shear)
+        mask = TF.affine(mask, angle, translate, scale, shear)
+    return img, mask
+
+
 dataset = Luminous()
 num_train = int(len(dataset) * 0.7)
 num_val = int(len(dataset) * 0.15)
 num_test = len(dataset) - num_train - num_val
 train_dataset, val_dataset, test_dataset = random_split(
     dataset, [num_train, num_val, num_test])
+
+
+def collate_train_batch(batch):
+    """Collate each batch"""
+    img_list, mask_list = [], []
+    for img, mask in batch:
+        img, mask = custom_transforms(img, mask)
+        img = F.pad(img, (0, 0, 91, 91))  # (1, 796, 820)
+        img = img[:, :796, :-24]  # (1, 796, 796)
+        mask = F.pad(mask, (0, 0, 91, 91))  # (1, 796, 820)
+        mask = mask[:, :796, :-24]  # (1, 796, 796)
+        mask = mask[:, 92:-92, 92:-92]  # (1, 612, 612)
+        img_list.append(img.unsqueeze(0))  # (1, 1, 796, 796)
+        mask_list.append(mask)  # (1, 796, 796)
+    img_tensor = torch.cat(img_list)
+    mask_tensor = torch.cat(mask_list)
+    return img_tensor, mask_tensor
 
 
 def collate_batch(batch):
@@ -41,7 +71,7 @@ def collate_batch(batch):
 
 BATCH_SIZE = 4
 train_dataloader = DataLoader(
-    train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
+    train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_train_batch)
 val_dataloader = DataLoader(
     val_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
 test_dataloader = DataLoader(
@@ -52,15 +82,23 @@ DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
 print('Current device:', DEVICE)
 
 
+def init_xavier_uniform(module):
+    if isinstance(module, torch.nn.Conv2d) or isinstance(module, torch.nn.ConvTranspose2d):
+        torch.nn.init.xavier_uniform_(module.weight)
+        module.bias.data.zero_()
+
+
 CHANNELS = [1, 64, 128, 256, 512, 1024]
 NUM_CLASSES = 2  # 0 and 1
 DROPOUT = 0.5  # used in the original paper
-MODEL = UNet(CHANNELS, NUM_CLASSES, DROPOUT).to(DEVICE)
-optimizer = optim.Adam(MODEL.parameters())
+model = UNet(CHANNELS, NUM_CLASSES, DROPOUT).to(DEVICE)
+model.apply(init_xavier_uniform)
+optimizer = optim.Adam(model.parameters())
 loss_fn = nn.CrossEntropyLoss()
-print(MODEL)
+print(model)
 
-train_loss_history, val_loss_history = iterate_train(MODEL, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE)
+train_loss_history, val_loss_history = iterate_train(
+    model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE)
 plt.plot(train_loss_history)
 plt.title('Training loss history')
 plt.show()
@@ -69,12 +107,13 @@ plt.show()
 test_loss_history = []
 test_pixel_acc = 0.
 test_iou = 0.
-for data in tqdm(test_dataloader, desc="  test"):
-    loss, pred = predict(MODEL, data, loss_fn, DEVICE)
+for data in tqdm(test_dataloader, desc="test"):
+    loss, pred = predict(model, data, loss_fn, DEVICE)
     test_loss_history.append(loss)
-    test_pixel_acc += (pred.argmax(dim=1) == data[1]).type(
+    test_pixel_acc += (pred.argmax(dim=1) == data[1].to(DEVICE, dtype=torch.long)).type(
         torch.float).sum().item()
-    test_iou += jaccard_index(pred, data[0], num_classes=2, ignore_index=0)
+    test_iou += jaccard_index(pred.argmax(dim=1),
+                              data[1].to(DEVICE, dtype=torch.long), num_classes=2)
 avg_test_loss = sum(test_loss_history) / len(test_dataloader)
 test_pixel_acc /= len(test_dataloader)
 test_iou /= len(test_dataloader)

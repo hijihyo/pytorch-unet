@@ -2,6 +2,7 @@
 utility methods for pytorch-unet
 """
 import datetime
+from pytz import timezone
 from tqdm import tqdm
 import torch
 
@@ -68,7 +69,7 @@ def iterate_train(
     """Iterate training the model with validation"""
     train_loss_history = []
     val_loss_history = []
-    start_time = datetime.datetime.now()
+    start_time = datetime.datetime.now(timezone('Asia/Seoul'))
     for epoch in range(1, num_epochs + 1):
         print(f"Epoch {epoch}...")
         loss_history = train(model, train_dataloader,
@@ -81,9 +82,9 @@ def iterate_train(
         print(f"  avg. training loss: {avg_train_loss:10.6f}")
         print(f"  avg. validation loss: {avg_val_loss:10.6f}")
         predicted_time = predict_time(
-            start_time, datetime.datetime.now(), (epoch / num_epochs))
+            start_time, datetime.datetime.now(timezone('Asia/Seoul')), (epoch / num_epochs))
         print("  expected end time:",
-                     predicted_time.strftime("%Y-%m-%d %H:%M:%S"))
+              predicted_time.strftime("%Y-%m-%d %H:%M:%S"))
         if save_checkpoint:
             torch.save(model.state_dict(), f'.temp/epoch{epoch}.pth')
     print('Done!')

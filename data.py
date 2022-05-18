@@ -12,11 +12,12 @@ class SegmentationDataset(torch.utils.data.Dataset):
     IMG_DIRECTORY = None
     MASK_DIRECTORY = None
 
-    def __init__(self, root: str = ".data", transform: Optional[Callable] = None, target_transform: Optional[Callable] = None):
+    def __init__(self, root: str = ".data", transform: Optional[Callable] = None, target_transform: Optional[Callable] = None, transforms: Optional[Callable] = None):
         super(SegmentationDataset, self).__init__()
         self.root = root
         self.transform = transform
         self.target_transform = target_transform
+        self.transforms = transforms
 
         self.imgs = list(
             sorted(os.listdir(os.path.join(root, self.DATASET_NAME, self.IMG_DIRECTORY))))
@@ -38,6 +39,8 @@ class SegmentationDataset(torch.utils.data.Dataset):
             img = self.transform(img)
         if self.target_transform is not None:
             mask = self.target_transform(mask)
+        if self.transforms is not None:
+            img, mask = self.transforms(img, mask)
 
         return img, mask
 
@@ -60,11 +63,12 @@ class Luminous(SegmentationDataset):
     IMG_DIRECTORY = "B-mode"
     MASK_DIRECTORY = "Masks"
 
-    def __init__(self, root: str = ".data", transform: Optional[Callable] = None, target_transform: Optional[Callable] = None):
+    def __init__(self, root: str = ".data", transform: Optional[Callable] = None, target_transform: Optional[Callable] = None, transforms: Optional[Callable] = None):
         super(Luminous, self).__init__()
         self.root = root
         self.transform = transform
         self.target_transform = target_transform
+        self.transforms = transforms
 
         self.masks = list(
             sorted(os.listdir(os.path.join(root, self.DATASET_NAME, self.MASK_DIRECTORY))))
