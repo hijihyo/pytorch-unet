@@ -19,7 +19,7 @@ def train(model, dataloader, optimizer, loss_fn, device: str):
     # batch_size = dataloader.batch_size
     # num_batches = len(dataloader)
     loss_history = []
-    for img, mask in tqdm(dataloader, desc="  training"):
+    for img, mask in tqdm(dataloader, desc="  train"):
         img, mask = img.to(device), mask.to(device, dtype=torch.long)
         pred = model(img)
         loss = loss_fn(pred, mask)
@@ -30,19 +30,35 @@ def train(model, dataloader, optimizer, loss_fn, device: str):
     return loss_history
 
 
-def evaluate(model, dataloader, loss_fn, device: str):
+def evaluate(
+    model, dataloader, loss_fn, device: str, desc: str = "  validation"
+):
     """Evaluate the model on dataset"""
     model.eval()
     # batch_size = dataloader.batch_size
     # num_batches = len(dataloader)
     loss_history = []
     with torch.no_grad():
-        for img, mask in tqdm(dataloader, desc="  validation"):
+        for img, mask in tqdm(dataloader, desc=desc):
             img, mask = img.to(device), mask.to(device, dtype=torch.long)
             pred = model(img)
             loss = loss_fn(pred, mask)
             loss_history.append(loss.item())
     return loss_history
+
+
+def predict(
+    model, data, loss_fn, device: str
+):
+    """Predict on data with the model"""
+    model.eval()
+    loss = None
+    with torch.no_grad():
+        img, mask = data
+        img, mask = img.to(device), mask.to(device, dtype=torch.long)
+        pred = model(img)
+        loss = loss_fn(pred, mask)
+    return loss, pred
 
 
 def iterate_train(
@@ -69,6 +85,6 @@ def iterate_train(
         print("  expected end time:",
                      predicted_time.strftime("%Y-%m-%d %H:%M:%S"))
         if save_checkpoint:
-            torch.save(model.state_dict(), f'epoch{epoch}.pth')
+            torch.save(model.state_dict(), f'.temp/epoch{epoch}.pth')
     print('Done!')
     return train_loss_history, val_loss_history
