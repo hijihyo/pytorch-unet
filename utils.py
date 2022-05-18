@@ -41,7 +41,6 @@ def evaluate(model, dataloader, loss_fn, device: str):
             img, mask = img.to(device), mask.to(device, dtype=torch.long)
             pred = model(img)
             loss = loss_fn(pred, mask)
-            loss.backward()
             loss_history.append(loss.item())
     return loss_history
 

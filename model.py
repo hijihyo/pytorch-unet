@@ -22,14 +22,18 @@ class UNetEncoderBlock(nn.Module):
 
     def forward(self, input: torch.Tensor):
         """Args:
-            input: a `torch.Tensor`, (in_channels, width, height) or (batch_size, in_channels, width, height)
+            input: a `torch.Tensor`, (in_channels, width, height) or
+            (batch_size, in_channels, width, height)
 
         Returns:
-            output: a `torch.Tensor`, (out_channels, width', height') or (batch_size, out_channels, width', height')
+            output: a `torch.Tensor`, (out_channels, width', height') or
+            (batch_size, out_channels, width', height')
+            conv_output: a `torch.Tensor`, (out_channels, width',
+            height') or (batch_size, out_channels, width'', height'')
         """
-        output = self.convs(input)
-        output = self.maxpool(output)
-        return output
+        conv_output = self.convs(input)
+        output = self.maxpool(conv_output)
+        return output, conv_output
 
 
 class UNetDecoderBlock(nn.Module):
@@ -39,7 +43,7 @@ class UNetDecoderBlock(nn.Module):
         super(UNetDecoderBlock, self).__init__()
 
         self.upconv = nn.ConvTranspose2d(
-            in_channels, in_channels // 2, pool_size)
+            in_channels, in_channels // 2, pool_size, stride=2)
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size),
             nn.ReLU(),
@@ -49,21 +53,28 @@ class UNetDecoderBlock(nn.Module):
 
     def forward(self, input: torch.Tensor, ec_output: torch.Tensor):
         """Args:
-            input: a `torch.Tensor`, (in_channels, width, height) or (batch_size, in_channels, width, height)
-            ec_output: an output `torch.Tensor` from the same-level of the encoder, (in_channels // 2, width', height') or (batch_size, in_channels // 2, width', height')
+            input: a `torch.Tensor`, (in_channels, width, height) or
+            (batch_size, in_channels, width, height)
+            ec_output: an output `torch.Tensor` from the same-level of
+            the encoder, (in_channels // 2, width', height') or
+            (batch_size, in_channels // 2, width', height')
 
         Returns:
-            output: a `torch.Tensor`, (out_channels, width', height') or (batch_size, out_channels, width', height')
+            output: a `torch.Tensor`, (out_channels, width', height') or
+            (batch_size, out_channels, width', height')
         """
         is_batched = input.dim() == 4
         if not is_batched:
             input = input.unsqueeze(0)
             ec_output = ec_output.unsqueeze(0)
-        width_diff = ec_output.size(2) - input.size(2)
-        height_diff = ec_output.size(3) - input.size(3)
         output = self.upconv(input)
-        output = torch.concat(
-            (output, ec_output[:, :, width_diff//2:-width_diff//2, height_diff//2:-height_diff//2]), dim=1)
+        width_diff = ec_output.size(2) - output.size(2)
+        height_diff = ec_output.size(3) - output.size(3)
+        eo_cropped = ec_output[:, :,
+                               width_diff//2:-width_diff//2,
+                               height_diff//2:-height_diff//2
+                               ]
+        output = torch.concat((output, eo_cropped), dim=1)
         output = self.convs(output)
         if not is_batched:
             output = output.squeeze(0)
@@ -73,7 +84,10 @@ class UNetDecoderBlock(nn.Module):
 class UNetEncoder(nn.Module):
     """Constructs a encoder of a U-Net model"""
 
-    def __init__(self, in_channels: int, blocks: List[int], out_channels: int, kernel_size: int, pool_size: int, dropout: float = 0.):
+    def __init__(
+        self, in_channels: int, blocks: List[int], out_channels: int,
+        kernel_size: int, pool_size: int, dropout: float = 0.
+    ):
         super(UNetEncoder, self).__init__()
 
         self.blocks = nn.ModuleList(
@@ -89,17 +103,19 @@ class UNetEncoder(nn.Module):
 
     def forward(self, input: torch.Tensor):
         """Args:
-            input: a `torch.Tensor`, (in_channels, width, height) or (batch_size, in_channels, width, height)
+            input: a `torch.Tensor`, (in_channels, width, height) or
+            (batch_size, in_channels, width, height)
 
         Returns:
-            output: a `torch.Tensor`, (out_channels, width', height') or (batch_size, out_channels, width, height)
+            output: a `torch.Tensor`, (out_channels, width', height') or
+            (batch_size, out_channels, width, height)
             block_output: a list of `torch.Tensor`s (length: num_blocks)
         """
         output = input
         block_output = []
         for i, _ in enumerate(self.blocks):
-            output = self.blocks[i](output)
-            block_output.append(output)
+            output, conv_output = self.blocks[i](output)
+            block_output.append(conv_output)
         if self.dropout is not None:
             output = self.dropout(output)  # 원래 위치는 아님
         output = self.output_block(output)
@@ -109,7 +125,10 @@ class UNetEncoder(nn.Module):
 class UNetDecoder(nn.Module):
     """Constructs a decoder of a U-Net model"""
 
-    def __init__(self, in_channels: int, blocks: List[int], out_channels: int, kernel_size: int, pool_size: int, dropout: float = 0.):
+    def __init__(
+        self, in_channels: int, blocks: List[int], out_channels: int,
+        kernel_size: int, pool_size: int, dropout: float = 0.
+    ):
         super(UNetDecoder, self).__init__()
 
         self.input_block = nn.Sequential(
@@ -126,14 +145,15 @@ class UNetDecoder(nn.Module):
 
     def forward(self, input: torch.Tensor, ec_output: List[torch.Tensor]):
         """Args:
-            input: a `torch.Tensor`, (in_channels, width, height) or (batch_size, in_channels, width, height)
+            input: a `torch.Tensor`, (in_channels, width, height) or
+            (batch_size, in_channels, width, height)
             ec_output: a list of `torch.Tensor`s (length: num_blocks)
         """
         output = self.input_block(input)
         if self.dropout is not None:
             output = self.dropout(output)
         for i, _ in enumerate(self.blocks):
-            output = self.block[i](output, ec_output[- i - 1])
+            output = self.blocks[i](output, ec_output[- i - 1])
         output = self.output_block(output)
         return output
 
@@ -153,10 +173,12 @@ class UNet(nn.Module):
 
     def forward(self, input: torch.Tensor):
         """Args:
-            input: a `torch.Tensor`, (in_channels, width, height) or (batch_size, in_channels, width, height)
+            input: a `torch.Tensor`, (in_channels, width, height) or
+            (batch_size, in_channels, width, height)
 
         Returns:
-            output: a `torch.Tensor`, (out_channels, width', height') or (batch_size, out_channels, width, height)
+            output: a `torch.Tensor`, (out_channels, width', height') or
+            (batch_size, out_channels, width, height)
         """
         output, block_output = self.encoder(input)
         output = self.decoder(output, block_output)
