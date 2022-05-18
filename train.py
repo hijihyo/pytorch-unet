@@ -2,19 +2,15 @@
 Train a U-Net model on Luminous database
 """
 import random
-from tqdm import tqdm
 import torch
 import torch.nn.functional as F
 import torchvision.transforms.functional as TF
 from torch import nn, optim
-from torch.utils.data import DataLoader, random_split
-# import torchvision
-import matplotlib.pyplot as plt
-from torchmetrics.functional import jaccard_index
+from torch.utils.data import DataLoader
 
 from data import Luminous
 from model import UNet
-from utils import iterate_train, predict
+from utils import evaluate, iterate_train
 
 
 def custom_transforms(img, mask):
@@ -77,26 +73,17 @@ optimizer = optim.Adam(model.parameters())
 loss_fn = nn.CrossEntropyLoss()
 print(model)
 
-train_loss_history, val_loss_history = iterate_train(
-    model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE)
-plt.plot(train_loss_history)
-plt.title('Training loss history')
-plt.show()
+
+train_history, val_history = iterate_train(
+    model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE, num_epochs=10)
 
 
-test_loss_history = []
-test_pixel_acc = 0.
-test_iou = 0.
-for data in tqdm(test_dataloader, desc="test"):
-    loss, pred = predict(model, data, loss_fn, DEVICE)
-    test_loss_history.append(loss)
-    test_pixel_acc += (pred.argmax(dim=1) == data[1].to(DEVICE, dtype=torch.long)).type(
-        torch.float).sum().item()
-    test_iou += jaccard_index(pred.argmax(dim=1),
-                              data[1].to(DEVICE, dtype=torch.long), num_classes=2)
+print()
+test_loss_history, test_pa_history, test_iou_history = \
+    evaluate(model, test_dataloader, loss_fn, DEVICE, desc="test")
 avg_test_loss = sum(test_loss_history) / len(test_dataloader)
-test_pixel_acc /= len(test_dataloader)
-test_iou /= len(test_dataloader)
+avg_test_pa = sum(test_pa_history) / len(test_dataloader)
+avg_test_iou = sum(test_iou_history) / len(test_dataloader)
 print(f"avg. test loss: {avg_test_loss:10.6f}")
-print(f"avg. test pixel acc.: {test_pixel_acc:7.5f}")
-print(f"avg. test IoU.: {test_iou:7.5f}")
+print(f"avg. test pixel acc.: {avg_test_pa:7.5f}")
+print(f"avg. test IoU.: {avg_test_iou:7.5f}")
