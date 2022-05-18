@@ -62,8 +62,11 @@ class Luminous(SegmentationDataset):
     DATASET_NAME = "Luminous"
     IMG_DIRECTORY = "B-mode"
     MASK_DIRECTORY = "Masks"
+    NUM_TRAIN = 270
+    NUM_VAL = 57
+    NUM_TEST = 59
 
-    def __init__(self, root: str = ".data", transform: Optional[Callable] = None, target_transform: Optional[Callable] = None, transforms: Optional[Callable] = None):
+    def __init__(self, root: str = ".data", split: str = "train", transform: Optional[Callable] = None, target_transform: Optional[Callable] = None, transforms: Optional[Callable] = None):
         super(Luminous, self).__init__()
         self.root = root
         self.transform = transform
@@ -72,5 +75,11 @@ class Luminous(SegmentationDataset):
 
         self.masks = list(
             sorted(os.listdir(os.path.join(root, self.DATASET_NAME, self.MASK_DIRECTORY))))
+        if split == "train":
+            self.masks = self.masks[:self.NUM_TRAIN]
+        elif split == "val":
+            self.masks = self.masks[self.NUM_TRAIN:self.NUM_TRAIN+self.NUM_VAL]
+        elif split == "test":
+            self.masks = self.masks[self.NUM_TRAIN+self.NUM_VAL:]
         self.imgs = [mask[:mask.rfind('_') + 1] +
                      'Bmode.tif' for mask in self.masks]

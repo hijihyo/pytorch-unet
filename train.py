@@ -2,19 +2,15 @@
 Train a U-Net model on Luminous database
 """
 import random
-from tqdm import tqdm
 import torch
 import torch.nn.functional as F
 import torchvision.transforms.functional as TF
 from torch import nn, optim
-from torch.utils.data import DataLoader, random_split
-# import torchvision
-import matplotlib.pyplot as plt
-from torchmetrics.functional import jaccard_index
+from torch.utils.data import DataLoader
 
 from data import Luminous
 from model import UNet
-from utils import iterate_train, predict
+from utils import evaluate, iterate_train
 
 
 def custom_transforms(img, mask):
@@ -28,29 +24,9 @@ def custom_transforms(img, mask):
     return img, mask
 
 
-dataset = Luminous()
-num_train = int(len(dataset) * 0.7)
-num_val = int(len(dataset) * 0.15)
-num_test = len(dataset) - num_train - num_val
-train_dataset, val_dataset, test_dataset = random_split(
-    dataset, [num_train, num_val, num_test])
-
-
-def collate_train_batch(batch):
-    """Collate each batch"""
-    img_list, mask_list = [], []
-    for img, mask in batch:
-        img, mask = custom_transforms(img, mask)
-        img = F.pad(img, (0, 0, 91, 91))  # (1, 796, 820)
-        img = img[:, :796, :-24]  # (1, 796, 796)
-        mask = F.pad(mask, (0, 0, 91, 91))  # (1, 796, 820)
-        mask = mask[:, :796, :-24]  # (1, 796, 796)
-        mask = mask[:, 92:-92, 92:-92]  # (1, 612, 612)
-        img_list.append(img.unsqueeze(0))  # (1, 1, 796, 796)
-        mask_list.append(mask)  # (1, 796, 796)
-    img_tensor = torch.cat(img_list)
-    mask_tensor = torch.cat(mask_list)
-    return img_tensor, mask_tensor
+train_dataset = Luminous(split="train", transforms=custom_transforms)
+val_dataset = Luminous(split="val")
+test_dataset = Luminous(split="test")
 
 
 def collate_batch(batch):
@@ -71,7 +47,7 @@ def collate_batch(batch):
 
 BATCH_SIZE = 4
 train_dataloader = DataLoader(
-    train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_train_batch)
+    train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
 val_dataloader = DataLoader(
     val_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
 test_dataloader = DataLoader(
@@ -97,26 +73,17 @@ optimizer = optim.Adam(model.parameters())
 loss_fn = nn.CrossEntropyLoss()
 print(model)
 
-train_loss_history, val_loss_history = iterate_train(
-    model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE)
-plt.plot(train_loss_history)
-plt.title('Training loss history')
-plt.show()
+
+train_history, val_history = iterate_train(
+    model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE, num_epochs=10)
 
 
-test_loss_history = []
-test_pixel_acc = 0.
-test_iou = 0.
-for data in tqdm(test_dataloader, desc="test"):
-    loss, pred = predict(model, data, loss_fn, DEVICE)
-    test_loss_history.append(loss)
-    test_pixel_acc += (pred.argmax(dim=1) == data[1].to(DEVICE, dtype=torch.long)).type(
-        torch.float).sum().item()
-    test_iou += jaccard_index(pred.argmax(dim=1),
-                              data[1].to(DEVICE, dtype=torch.long), num_classes=2)
+print()
+test_loss_history, test_pa_history, test_iou_history = \
+    evaluate(model, test_dataloader, loss_fn, DEVICE, desc="test")
 avg_test_loss = sum(test_loss_history) / len(test_dataloader)
-test_pixel_acc /= len(test_dataloader)
-test_iou /= len(test_dataloader)
+avg_test_pa = sum(test_pa_history) / len(test_dataloader)
+avg_test_iou = sum(test_iou_history) / len(test_dataloader)
 print(f"avg. test loss: {avg_test_loss:10.6f}")
-print(f"avg. test pixel acc.: {test_pixel_acc:7.5f}")
-print(f"avg. test IoU.: {test_iou:7.5f}")
+print(f"avg. test pixel acc.: {avg_test_pa:7.5f}")
+print(f"avg. test IoU.: {avg_test_iou:7.5f}")
