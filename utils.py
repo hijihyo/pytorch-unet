@@ -1,5 +1,7 @@
+"""
+utility methods for pytorch-unet
+"""
 import datetime
-import logging
 from tqdm import tqdm
 import torch
 
@@ -44,14 +46,16 @@ def evaluate(model, dataloader, loss_fn, device: str):
     return loss_history
 
 
-def iterate_train(model, train_dataloader, val_dataloader, optimizer, loss_fn, device: str, num_epochs: int = 1, save_checkpoint: bool = True):
+def iterate_train(
+    model, train_dataloader, val_dataloader, optimizer, loss_fn,
+    device: str, num_epochs: int = 1, save_checkpoint: bool = True
+):
     """Iterate training the model with validation"""
     train_loss_history = []
     val_loss_history = []
     start_time = datetime.datetime.now()
     for epoch in range(1, num_epochs + 1):
-        logging.info('-' * 50)
-        logging.info("Epoch %d...", epoch)
+        print(f"Epoch {epoch}...")
         loss_history = train(model, train_dataloader,
                              optimizer, loss_fn, device)
         train_loss_history += loss_history
@@ -59,14 +63,13 @@ def iterate_train(model, train_dataloader, val_dataloader, optimizer, loss_fn, d
         loss_history = evaluate(model, val_dataloader, loss_fn, device)
         val_loss_history += loss_history
         avg_val_loss = sum(loss_history) / len(val_dataloader)
-        logging.info("  avg. training loss: %10.6f", avg_train_loss)
-        logging.info("  avg. validation loss: %10.6f", avg_val_loss)
+        print(f"  avg. training loss: {avg_train_loss:10.6f}")
+        print(f"  avg. validation loss: {avg_val_loss:10.6f}")
         predicted_time = predict_time(
             start_time, datetime.datetime.now(), (epoch / num_epochs))
-        logging.info("  expected end time: %s",
+        print("  expected end time:",
                      predicted_time.strftime("%Y-%m-%d %H:%M:%S"))
         if save_checkpoint:
             torch.save(model.state_dict(), f'epoch{epoch}.pth')
-    logging.info('-' * 50)
-    logging.info('Done!')
+    print('Done!')
     return train_loss_history, val_loss_history
