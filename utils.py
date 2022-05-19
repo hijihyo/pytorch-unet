@@ -106,7 +106,7 @@ def iterate_train(
         print("  expected end time:",
               predicted_time.strftime("%Y-%m-%d %H:%M:%S"))
         if save_checkpoint:
-            torch.save(model.state_dict(), f'.temp/epoch{epoch}.pth')
+            torch.save(model.state_dict(), f'/home/student1/.temp/epoch{epoch}.pth')
 
     print()
     print('Done!')

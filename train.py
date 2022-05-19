@@ -24,13 +24,6 @@ def custom_transforms(img, mask):
     return img, mask
 
 
-root = "/home/DATA/ksh/data"
-# train_dataset = Luminous(root=root, split="train", transforms=custom_transforms)
-train_dataset = Luminous(root=root, split="train")
-val_dataset = Luminous(root=root, split="val")
-test_dataset = Luminous(root=root, split="test")
-
-
 def collate_batch(batch):
     """Collate each batch"""
     img_list, mask_list = [], []
@@ -47,45 +40,53 @@ def collate_batch(batch):
     return img_tensor, mask_tensor
 
 
-BATCH_SIZE = 2 
-train_dataloader = DataLoader(
-    train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
-val_dataloader = DataLoader(
-    val_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
-test_dataloader = DataLoader(
-    test_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
-
-
-DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-print('Current device:', DEVICE)
-
-
 def init_xavier_uniform(module):
     if isinstance(module, torch.nn.Conv2d) or isinstance(module, torch.nn.ConvTranspose2d):
         torch.nn.init.xavier_normal_(module.weight)
         module.bias.data.zero_()
 
 
-CHANNELS = [1, 64, 128, 256, 512, 1024]
-NUM_CLASSES = 2  # 0 and 1
-DROPOUT = 0.5  # used in the original paper
-model = UNet(CHANNELS, NUM_CLASSES, DROPOUT).to(DEVICE)
-model.apply(init_xavier_uniform)
-optimizer = optim.Adam(model.parameters())
-loss_fn = nn.CrossEntropyLoss()
-print(model)
+if __name__ == "__main__":
+    root = "/home/DATA/ksh/data"
+    # train_dataset = Luminous(root=root, split="train", transforms=custom_transforms)
+    train_dataset = Luminous(root=root, split="train")
+    val_dataset = Luminous(root=root, split="val")
+    test_dataset = Luminous(root=root, split="test")
 
 
-train_history, val_history = iterate_train(
-    model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE, num_epochs=3)
+    BATCH_SIZE = 2 
+    train_dataloader = DataLoader(
+        train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
+    val_dataloader = DataLoader(
+        val_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
+    test_dataloader = DataLoader(
+        test_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
 
 
-print()
-test_loss_history, test_pa_history, test_iou_history = \
-    evaluate(model, test_dataloader, loss_fn, DEVICE, desc="test")
-avg_test_loss = sum(test_loss_history) / len(test_dataloader)
-avg_test_pa = sum(test_pa_history) / len(test_dataloader)
-avg_test_iou = sum(test_iou_history) / len(test_dataloader)
-print(f"avg. test loss: {avg_test_loss:10.6f}")
-print(f"avg. test pixel acc.: {avg_test_pa:7.5f}")
-print(f"avg. test IoU.: {avg_test_iou:7.5f}")
+    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
+    print('Current device:', DEVICE)
+
+
+    CHANNELS = [1, 64, 128, 256, 512, 1024]
+    NUM_CLASSES = 2  # 0 and 1
+    DROPOUT = 0.5  # used in the original paper
+    model = UNet(CHANNELS, NUM_CLASSES, DROPOUT).to(DEVICE)
+    model.apply(init_xavier_uniform)
+    optimizer = optim.Adam(model.parameters())
+    loss_fn = nn.CrossEntropyLoss()
+    print(model)
+
+
+    train_history, val_history = iterate_train(
+        model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE, num_epochs=3)
+
+
+    print()
+    test_loss_history, test_pa_history, test_iou_history = \
+        evaluate(model, test_dataloader, loss_fn, DEVICE, desc="test")
+    avg_test_loss = sum(test_loss_history) / len(test_dataloader)
+    avg_test_pa = sum(test_pa_history) / len(test_dataloader)
+    avg_test_iou = sum(test_iou_history) / len(test_dataloader)
+    print(f"avg. test loss: {avg_test_loss:10.6f}")
+    print(f"avg. test pixel acc.: {avg_test_pa:7.5f}")
+    print(f"avg. test IoU.: {avg_test_iou:7.5f}")
