@@ -14,8 +14,10 @@ class UNetEncoderBlock(nn.Module):
 
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(),
             nn.Conv2d(out_channels, out_channels, kernel_size),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(),
         )
         self.maxpool = nn.MaxPool2d(pool_size)
@@ -46,8 +48,10 @@ class UNetDecoderBlock(nn.Module):
             in_channels, in_channels // 2, pool_size, stride=2)
         self.convs = nn.Sequential(
             nn.Conv2d(in_channels, out_channels, kernel_size),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(),
             nn.Conv2d(out_channels, out_channels, kernel_size),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(),
         )
 
@@ -98,6 +102,7 @@ class UNetEncoder(nn.Module):
             self.dropout = nn.Dropout(dropout)
         self.output_block = nn.Sequential(
             nn.Conv2d(blocks[-1], out_channels, kernel_size),
+            nn.BatchNorm2d(out_channels),
             nn.ReLU(),
         )
 
@@ -133,6 +138,7 @@ class UNetDecoder(nn.Module):
 
         self.input_block = nn.Sequential(
             nn.Conv2d(in_channels, in_channels, kernel_size),
+            nn.BatchNorm2d(in_channels),
             nn.ReLU(),
         )
         if dropout > 0:

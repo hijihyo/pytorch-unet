@@ -25,7 +25,8 @@ def custom_transforms(img, mask):
 
 
 root = "/home/DATA/ksh/data"
-train_dataset = Luminous(root=root, split="train", transforms=custom_transforms)
+# train_dataset = Luminous(root=root, split="train", transforms=custom_transforms)
+train_dataset = Luminous(root=root, split="train")
 val_dataset = Luminous(root=root, split="val")
 test_dataset = Luminous(root=root, split="test")
 
@@ -46,7 +47,7 @@ def collate_batch(batch):
     return img_tensor, mask_tensor
 
 
-BATCH_SIZE = 4
+BATCH_SIZE = 2 
 train_dataloader = DataLoader(
     train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
 val_dataloader = DataLoader(
@@ -61,7 +62,7 @@ print('Current device:', DEVICE)
 
 def init_xavier_uniform(module):
     if isinstance(module, torch.nn.Conv2d) or isinstance(module, torch.nn.ConvTranspose2d):
-        torch.nn.init.xavier_uniform_(module.weight)
+        torch.nn.init.xavier_normal_(module.weight)
         module.bias.data.zero_()
 
 
@@ -76,7 +77,7 @@ print(model)
 
 
 train_history, val_history = iterate_train(
-    model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE, num_epochs=10)
+    model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE, num_epochs=3)
 
 
 print()
