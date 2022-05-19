@@ -67,7 +67,7 @@ class Luminous(SegmentationDataset):
     NUM_TEST = 59
 
     def __init__(self, root: str = ".data", split: str = "train", transform: Optional[Callable] = None, target_transform: Optional[Callable] = None, transforms: Optional[Callable] = None):
-        super(Luminous, self).__init__()
+        super(Luminous, self).__init__(root, transform, target_transform, transforms)
         self.root = root
         self.transform = transform
         self.target_transform = target_transform

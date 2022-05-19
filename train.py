@@ -24,9 +24,10 @@ def custom_transforms(img, mask):
     return img, mask
 
 
-train_dataset = Luminous(split="train", transforms=custom_transforms)
-val_dataset = Luminous(split="val")
-test_dataset = Luminous(split="test")
+root = "/home/DATA/ksh/data"
+train_dataset = Luminous(root=root, split="train", transforms=custom_transforms)
+val_dataset = Luminous(root=root, split="val")
+test_dataset = Luminous(root=root, split="test")
 
 
 def collate_batch(batch):
