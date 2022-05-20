@@ -105,7 +105,7 @@ if __name__ == "__main__":
     # In order to script the transformations, please use torch.nn.Sequential instead of Compose.
     transform = T.Compose([
         T.ToTensor(),
-        T.Pad((6, 6, 5, 5)),  # (614, 820) -> (624, 832)
+        T.Pad((6, 5)),  # (614, 820) -> (624, 832)
     ])
     dataset = Luminous(
         root=args.data_dir,
