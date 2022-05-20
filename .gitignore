@@ -1,4 +1,5 @@
 .data
+.model
 
 # Created by https://www.toptal.com/developers/gitignore/api/macos,linux,visualstudiocode,vim,python
 # Edit at https://www.toptal.com/developers/gitignore?templates=macos,linux,visualstudiocode,vim,python
