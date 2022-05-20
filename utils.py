@@ -1,6 +1,7 @@
 """
 utility methods for pytorch-unet
 """
+import os
 import datetime
 from pytz import timezone
 from tqdm import tqdm
@@ -15,6 +16,10 @@ def predict_time(start_time, current_time, progress):
     return predicted_time
 
 
+def dice_loss():
+    pass
+
+
 def train(model, dataloader, optimizer, loss_fn, device: str):
     """Train the model for one epoch"""
     model.train()
@@ -26,6 +31,7 @@ def train(model, dataloader, optimizer, loss_fn, device: str):
     for img, mask in tqdm(dataloader, desc="  train"):
         img, mask = img.to(device), mask.to(device, dtype=torch.long)
         pred = model(img)
+        # loss = loss_fn(pred, mask) + dice_loss() # TODO:
         loss = loss_fn(pred, mask)
         optimizer.zero_grad()
         loss.backward()
@@ -65,7 +71,7 @@ def evaluate(
 
 def iterate_train(
     model, train_dataloader, val_dataloader, optimizer, loss_fn,
-    device: str, num_epochs: int = 1, save_checkpoint: bool = True
+    device: str, num_epochs: int = 1, model_dir: str = ".model", encoder_dir: str = ".encoder"
 ):
     """Iterate training the model with validation"""
     train_history = {"loss": [], "pixel_acc": [], "iou": []}
@@ -103,11 +109,12 @@ def iterate_train(
 
         predicted_time = predict_time(
             start_time, datetime.datetime.now(timezone('Asia/Seoul')), (epoch / num_epochs))
+        print()
         print("  expected end time:",
               predicted_time.strftime("%Y-%m-%d %H:%M:%S"))
-        if save_checkpoint:
-            torch.save(model.state_dict(), f'/home/student1/.temp/epoch{epoch}.pth')
+        torch.save(model.state_dict(), os.path.join(model_dir, f'model-epoch{epoch}.pth'))
+        torch.save(model.encoder.state_dict(), os.path.join(encoder_dir, f'encoder-epoch{epoch}.pth'))
+        print()
 
-    print()
     print('Done!')
     return train_history, val_history
