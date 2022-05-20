@@ -4,3 +4,5 @@
 mkdir .data
 # Create a directory for model parameters
 mkdir .model
+# Create a directory for encoder parameters
+mkdir .encoder
