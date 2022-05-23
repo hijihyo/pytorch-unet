@@ -6,6 +6,8 @@ import datetime
 from pytz import timezone
 from tqdm import tqdm
 import torch
+import torch.nn.functional as F
+from torch import Tensor
 from torchmetrics.functional import jaccard_index
 
 
@@ -16,8 +18,20 @@ def predict_time(start_time, current_time, progress):
     return predicted_time
 
 
-def dice_loss():
-    pass
+def dice_loss(pred: Tensor, target: Tensor, eps: float = 1e-6):
+    """Computes dice loss between prediction and target (only for binary class"""
+    assert pred.dim() == target.dim()  # (H, W) or (B, H, W)
+    is_batched = pred.dim() == 3
+    if not is_batched:
+        pred = pred.unsqueeze(0)
+        target = target.unsqueeze(0)
+    dice = 0.
+    for i, _ in enumerate(pred):
+        inter = torch.sum(pred[i].view(-1) * target[i].view(-1))
+        union = pred[i].sum() + target[i].sum()
+        dice += (2 * inter + eps) / (union + eps)
+    dice /= pred.size(0)
+    return 1 - dice
 
 
 def train(model, dataloader, optimizer, loss_fn, device: str):
@@ -31,8 +45,8 @@ def train(model, dataloader, optimizer, loss_fn, device: str):
     for img, mask in tqdm(dataloader, desc="  train"):
         img, mask = img.to(device), mask.to(device, dtype=torch.long)
         pred = model(img)
-        # loss = loss_fn(pred, mask) + dice_loss() # TODO:
-        loss = loss_fn(pred, mask)
+        loss = loss_fn(pred, mask) + dice_loss(F.softmax(pred), mask)
+        # loss = loss_fn(pred, mask)
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
@@ -59,7 +73,8 @@ def evaluate(
         for img, mask in tqdm(dataloader, desc=desc):
             img, mask = img.to(device), mask.to(device, dtype=torch.long)
             pred = model(img)
-            loss = loss_fn(pred, mask)
+            loss = loss_fn(pred, mask) + dice_loss(F.softmax(pred), mask)
+            # loss = loss_fn(pred, mask)
             loss_history.append(loss.item())
             pixel_acc = (pred.argmax(dim=1) == mask).sum().item() / \
                 (pred.size(0) * pred.size(2) * pred.size(3))
@@ -112,8 +127,10 @@ def iterate_train(
         print()
         print("  expected end time:",
               predicted_time.strftime("%Y-%m-%d %H:%M:%S"))
-        torch.save(model.state_dict(), os.path.join(model_dir, f'model-epoch{epoch}.pth'))
-        torch.save(model.encoder.state_dict(), os.path.join(encoder_dir, f'encoder-epoch{epoch}.pth'))
+        torch.save(model.state_dict(), os.path.join(
+            model_dir, f'model-epoch{epoch}.pth'))
+        torch.save(model.encoder.state_dict(), os.path.join(
+            encoder_dir, f'encoder-epoch{epoch}.pth'))
         print()
 
     print('Done!')
