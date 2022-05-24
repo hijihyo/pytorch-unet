@@ -2,13 +2,15 @@
 Utility methods
 """
 import random
+from typing import Optional
+
 import torch
 import torch.nn.functional as F
 import torchvision.transforms.functional as TF
-
 from torch import nn, Tensor
 from torch.nn.modules.loss import _WeightedLoss
-from typing import Optional
+from ignite.metrics import DiceCoefficient
+from ignite.metrics.confusion_matrix import ConfusionMatrix
 
 
 def transforms(img, mask):
@@ -58,40 +60,28 @@ def kaiming_normal_initialize(module):
         nn.init.kaiming_normal_(module.weight, nonlinearity="relu")
         module.bias.data.zero_()
 
-def dice_coef(pred: Tensor, target: Tensor, eps: float = 1e-6):
-    """Computes dice coefficient between prediction and target (only for binary class"""
-    assert pred.dim() == target.dim() + 1  # ([C,] H, W) or (B, [C,] H, W)
-    is_batched = pred.dim() == 4 
-    if not is_batched:
-        pred = pred.unsqueeze(0)
-        target = target.unsqueeze(0)
-    dice = 0.
-    for i, _ in enumerate(pred):
-        inter = torch.sum(pred[i, 1].view(-1) * target[i].view(-1))
-        union = pred[i, 1].sum() + target[i].sum()
-        dice += (2 * inter + eps) / (union + eps)
-    dice /= pred.size(0)
-    return dice
-
 
 class SegmentationLoss(_WeightedLoss):
     """Combination of nn.CrossEntropyLoss and dice loss"""
 
     def __init__(self, weight: Optional[Tensor] = None,
     size_average=None, ignore_index: int = -100, reduce=None,
-    reduction: str = 'mean', label_smoothing: float = 0.0) -> None:
+    reduction: str = 'mean', label_smoothing: float = 0.0, num_classes: int = 2) -> None:
         super(SegmentationLoss, self).__init__(
             weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
         self.label_smoothing = label_smoothing
+        self.dice_coef = DiceCoefficient(ConfusionMatrix(num_classes), ignore_index)
 
-    def forward(self, input: Tensor, target: Tensor) -> Tensor:
+    def forward(self, pred: Tensor, target: Tensor) -> Tensor:
         """Args:
             input: torch.Tensor, (C, H, W) or (B, C, H, W)
             target: torch.Tensor, (H, W) or (B, H, W)
         """
-        ce_loss = F.cross_entropy(input, target, weight=self.weight,
+        ce_loss = F.cross_entropy(pred, target, weight=self.weight,
                                   ignore_index=self.ignore_index, reduction=self.reduction,
                                   label_smoothing=self.label_smoothing)
-        dice_loss = 1 - dice_coef(F.softmax(input, dim=input.dim()-3), target)
+        self.dice_coef.update((pred, target))
+        dice_loss = 1 - self.dice_coef.compute()
+        self.dice_coef.reset()
         return ce_loss + dice_loss

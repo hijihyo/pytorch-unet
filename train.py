@@ -69,7 +69,7 @@ if __name__ == "__main__":
     print(model)
 
     optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
-    loss_fn = SegmentationLoss()
+    loss_fn = SegmentationLoss(num_classes=NUM_CLASSES)
 
     trainer = create_supervised_trainer(
         model, optimizer, loss_fn, device=args.device)
@@ -84,30 +84,34 @@ if __name__ == "__main__":
         model, metrics=val_metrics, device=args.device)
     ProgressBar().attach(evaluator)
 
-#    @trainer.on(Events.ITERATION_COMPLETED(every=args.log_interval))
-#    def log_training_loss(_trainer):
-#        print(
-#            f"Epoch[{_trainer.state.epoch}] Loss: {_trainer.state.output:.2f}")
+    @trainer.on(Events.EPOCH_STARTED)
+    def log_epoch_no(_trainer):
+        print(f"Epoch {_trainer.state.epoch}:")
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(_trainer):
         evaluator.run(train_dataloader)
         metrics = evaluator.state.metrics
-        print(
-            f"Training Results - Epoch: {_trainer.state.epoch} Avg accuracy: {metrics['accuracy']:.2f} Avg loss: {metrics['loss']:.2f} Avg IoU: {metrics['IoU'].mean():.2f}")
+        print("\t[TRAIN RESULT]",
+              f"avg. acc: {metrics['accuracy']:.5f}",
+              f"avg. loss: {metrics['loss']:.5f}",
+              f"avg. IoU: {metrics['IoU'].mean():.5f}")
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_validation_results(_trainer):
         evaluator.run(val_dataloader)
         metrics = evaluator.state.metrics
-        print(
-            f"Validation Results - Epoch: {_trainer.state.epoch}  Avg accuracy: {metrics['accuracy']:.2f} Avg loss: {metrics['loss']:.2f} Avg IoU: {metrics['IoU'].mean():.2f}")
+        print("\t[VAL. RESULT] ",
+              f"avg. acc: {metrics['accuracy']:.5f}",
+              f"avg. loss: {metrics['loss']:.5f}",
+              f"avg. IoU: {metrics['IoU'].mean():.5f}")
     
     def score_function(engine):
-        return engine.state.metrics['IoU'].mean().item()
+        val_loss = engine.state.metrics['loss']
+        return -val_loss
     
     if args.early_stop:
-        handler = EarlyStopping(patience=10, score_function=score_function, trainer=trainer)
+        handler = EarlyStopping(patience=5, score_function=score_function, trainer=trainer)
         evaluator.add_event_handler(Events.COMPLETED, handler)
 
     model_checkpoint = ModelCheckpoint(args.model_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
