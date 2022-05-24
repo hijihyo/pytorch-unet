@@ -8,8 +8,9 @@ import torchvision.transforms as T
 
 from torch import optim
 from torch.utils.data import DataLoader, random_split
+from ignite.contrib.handlers import ProgressBar, global_step_from_engine
 from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
-from ignite.handlers import EarlyStopping
+from ignite.handlers import EarlyStopping, ModelCheckpoint
 from ignite.metrics import Accuracy, Loss, IoU
 from ignite.metrics.confusion_matrix import ConfusionMatrix
 
@@ -20,7 +21,6 @@ from utils import collate_train_batch, collate_batch, kaiming_normal_initialize,
 IN_CHANNELS = 1
 NUM_CLASSES = 2
 SPLIT_RATIO = (0.7, 0.15, 0.15)
-LOG_INTERVAL = 10
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--batch-size", default=2, type=int)
@@ -28,7 +28,9 @@ parser.add_argument("--device", default="cuda", type=str)
 parser.add_argument("--dropout", default=0.5, type=float)
 parser.add_argument("--learning-rate", default=1e-3)
 parser.add_argument("--num-epochs", default=20, type=int)
-parser.add_argument("--early-stop", default=False, type=bool)
+parser.add_argument("--early-stop", dest='early_stop', action='store_true')
+parser.set_defaults(early_stop=False)
+parser.add_argument("--log-interval", default=50, type=int)
 parser.add_argument("--data-dir", default=".data", type=str)
 parser.add_argument("--model-dir", default=".model", type=str)
 parser.add_argument("--encoder-dir", default=".encoder", type=str)
@@ -71,6 +73,7 @@ if __name__ == "__main__":
 
     trainer = create_supervised_trainer(
         model, optimizer, loss_fn, device=args.device)
+    ProgressBar().attach(trainer, output_transform=lambda x: {'loss': x})
 
     val_metrics = {
         "accuracy": Accuracy(),
@@ -79,31 +82,38 @@ if __name__ == "__main__":
     }
     evaluator = create_supervised_evaluator(
         model, metrics=val_metrics, device=args.device)
+    ProgressBar().attach(evaluator)
 
-    @trainer.on(Events.ITERATION_COMPLETED(every=LOG_INTERVAL))
-    def log_training_loss(_trainer):
-        print(
-            f"Epoch[{_trainer.state.epoch}] Loss: {_trainer.state.output:.2f}")
+#    @trainer.on(Events.ITERATION_COMPLETED(every=args.log_interval))
+#    def log_training_loss(_trainer):
+#        print(
+#            f"Epoch[{_trainer.state.epoch}] Loss: {_trainer.state.output:.2f}")
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_training_results(_trainer):
         evaluator.run(train_dataloader)
         metrics = evaluator.state.metrics
         print(
-            f"Training Results - Epoch: {_trainer.state.epoch} Avg accuracy: {metrics['accuracy']:.2f} Avg loss: {metrics['loss']:.2f} Avg IoU: {metrics['IoU']:.2f}")
+            f"Training Results - Epoch: {_trainer.state.epoch} Avg accuracy: {metrics['accuracy']:.2f} Avg loss: {metrics['loss']:.2f} Avg IoU: {metrics['IoU'].mean():.2f}")
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_validation_results(_trainer):
         evaluator.run(val_dataloader)
         metrics = evaluator.state.metrics
         print(
-            f"Validation Results - Epoch: {_trainer.state.epoch}  Avg accuracy: {metrics['accuracy']:.2f} Avg loss: {metrics['loss']:.2f} Avg IoU: {metrics['IoU']:.2f}")
+            f"Validation Results - Epoch: {_trainer.state.epoch}  Avg accuracy: {metrics['accuracy']:.2f} Avg loss: {metrics['loss']:.2f} Avg IoU: {metrics['IoU'].mean():.2f}")
     
     def score_function(engine):
-        val_accuracy = engine.state.metrics['accuracy']
-        return val_accuracy
+        return engine.state.metrics['IoU'].mean().item()
     
-    handler = EarlyStopping(patience=5, score_function=score_function, trainer=trainer)
-    evaluator.add_event_handler(Events.COMPLETED, handler)
+    if args.early_stop:
+        handler = EarlyStopping(patience=10, score_function=score_function, trainer=trainer)
+        evaluator.add_event_handler(Events.COMPLETED, handler)
 
-    trainer.run(train_dataloader, max_epochs=1)
+    model_checkpoint = ModelCheckpoint(args.model_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
+    evaluator.add_event_handler(Events.COMPLETED, model_checkpoint, { "model": model })
+
+    encoder_checkpoint = ModelCheckpoint(args.encoder_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
+    evaluator.add_event_handler(Events.COMPLETED, encoder_checkpoint, { "encoder": model.encoder })
+
+    trainer.run(train_dataloader, max_epochs=100)

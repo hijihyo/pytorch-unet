@@ -37,7 +37,7 @@ def collate_train_batch(batch):
         imgs.append(img.unsqueeze(0))
         masks.append(mask)
     img_tensor = torch.cat(imgs)  # (B, 1, 624, 832)
-    mask_tensor = torch.cat(masks)  # (B, 624, 832)
+    mask_tensor = torch.cat(masks).to(torch.long)  # (B, 624, 832)
     return img_tensor, mask_tensor
 
 
@@ -48,7 +48,7 @@ def collate_batch(batch):
         imgs.append(img.unsqueeze(0))
         masks.append(mask)
     img_tensor = torch.cat(imgs)  # (B, 1, 624, 832)
-    mask_tensor = torch.cat(masks)  # (B, 624, 832)
+    mask_tensor = torch.cat(masks).to(torch.long)  # (B, 624, 832)
     return img_tensor, mask_tensor
 
 
@@ -60,15 +60,15 @@ def kaiming_normal_initialize(module):
 
 def dice_coef(pred: Tensor, target: Tensor, eps: float = 1e-6):
     """Computes dice coefficient between prediction and target (only for binary class"""
-    assert pred.dim() == target.dim()  # (H, W) or (B, H, W)
-    is_batched = pred.dim() == 3
+    assert pred.dim() == target.dim() + 1  # ([C,] H, W) or (B, [C,] H, W)
+    is_batched = pred.dim() == 4 
     if not is_batched:
         pred = pred.unsqueeze(0)
         target = target.unsqueeze(0)
     dice = 0.
     for i, _ in enumerate(pred):
-        inter = torch.sum(pred[i].view(-1) * target[i].view(-1))
-        union = pred[i].sum() + target[i].sum()
+        inter = torch.sum(pred[i, 1].view(-1) * target[i].view(-1))
+        union = pred[i, 1].sum() + target[i].sum()
         dice += (2 * inter + eps) / (union + eps)
     dice /= pred.size(0)
     return dice
@@ -93,5 +93,5 @@ class SegmentationLoss(_WeightedLoss):
         ce_loss = F.cross_entropy(input, target, weight=self.weight,
                                   ignore_index=self.ignore_index, reduction=self.reduction,
                                   label_smoothing=self.label_smoothing)
-        dice_loss = 1 - dice_coef(F.softmax(input), target)
+        dice_loss = 1 - dice_coef(F.softmax(input, dim=input.dim()-3), target)
         return ce_loss + dice_loss
