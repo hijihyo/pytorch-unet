@@ -27,7 +27,7 @@ parser.add_argument("--batch-size", default=2, type=int)
 parser.add_argument("--device", default="cuda", type=str)
 parser.add_argument("--dropout", default=0.5, type=float)
 parser.add_argument("--learning-rate", default=1e-3)
-parser.add_argument("--num-epochs", default=20, type=int)
+parser.add_argument("--num-epochs", default=100, type=int)
 parser.add_argument("--early-stop", dest='early_stop', action='store_true')
 parser.set_defaults(early_stop=False)
 parser.add_argument("--log-interval", default=50, type=int)
@@ -92,32 +92,42 @@ if __name__ == "__main__":
     def log_training_results(_trainer):
         evaluator.run(train_dataloader)
         metrics = evaluator.state.metrics
-        print("\t[TRAIN RESULT]",
+        print("  [TRAIN DATA]",
               f"avg. acc: {metrics['accuracy']:.5f}",
               f"avg. loss: {metrics['loss']:.5f}",
               f"avg. IoU: {metrics['IoU'].mean():.5f}")
+
+    def score_function(_engine):
+        val_loss = _engine.state.metrics['loss']
+        return -val_loss
+
+    if args.early_stop:
+        early_stopper = EarlyStopping(patience=10, score_function=score_function, trainer=trainer)
+
+    model_checkpoint = ModelCheckpoint(args.model_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
+    encoder_checkpoint = ModelCheckpoint(args.encoder_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_validation_results(_trainer):
         evaluator.run(val_dataloader)
         metrics = evaluator.state.metrics
-        print("\t[VAL. RESULT] ",
+        print("  [VALID DATA]",
               f"avg. acc: {metrics['accuracy']:.5f}",
               f"avg. loss: {metrics['loss']:.5f}",
               f"avg. IoU: {metrics['IoU'].mean():.5f}")
-    
-    def score_function(engine):
-        val_loss = engine.state.metrics['loss']
-        return -val_loss
-    
-    if args.early_stop:
-        handler = EarlyStopping(patience=5, score_function=score_function, trainer=trainer)
-        evaluator.add_event_handler(Events.COMPLETED, handler)
 
-    model_checkpoint = ModelCheckpoint(args.model_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
-    evaluator.add_event_handler(Events.COMPLETED, model_checkpoint, { "model": model })
+        if early_stopper is not None:
+            early_stopper(evaluator)
+            state_dict = early_stopper.state_dict()
+            print("  [EARLY STOP]",
+                  f"counter: {state_dict['counter']}",
+                  f"best score: {state_dict['best_score']:.5f}")
 
-    encoder_checkpoint = ModelCheckpoint(args.encoder_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
-    evaluator.add_event_handler(Events.COMPLETED, encoder_checkpoint, { "encoder": model.encoder })
+        model_checkpoint(evaluator, to_save={"model": model})
+        encoder_checkpoint(evaluator, to_save={"encoder": model.encoder})
+        saved_list = model_checkpoint.state_dict()['saved']
+        saved_list = saved_list if len(saved_list) <= 3 else saved_list[-3:0]
+        saved_list = [f for p, f in saved_list]
+        print("  [CHECKPOINT]", *saved_list)
 
-    trainer.run(train_dataloader, max_epochs=100)
+    trainer.run(train_dataloader, max_epochs=args.num_epochs)

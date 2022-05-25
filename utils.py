@@ -71,7 +71,10 @@ class SegmentationLoss(_WeightedLoss):
             weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
         self.label_smoothing = label_smoothing
-        self.dice_coef = DiceCoefficient(ConfusionMatrix(num_classes), ignore_index)
+        self.dice_coef = \
+                DiceCoefficient(ConfusionMatrix(num_classes), ignore_index) \
+                if ignore_index >= 0 else \
+                DiceCoefficient(ConfusionMatrix(num_classes))
 
     def forward(self, pred: Tensor, target: Tensor) -> Tensor:
         """Args:
@@ -82,6 +85,6 @@ class SegmentationLoss(_WeightedLoss):
                                   ignore_index=self.ignore_index, reduction=self.reduction,
                                   label_smoothing=self.label_smoothing)
         self.dice_coef.update((pred, target))
-        dice_loss = 1 - self.dice_coef.compute()
+        dice_loss = 1 - self.dice_coef.compute().mean()
         self.dice_coef.reset()
-        return ce_loss + dice_loss
+        return ce_loss + dice_loss.to(ce_loss.device)
