@@ -1,92 +1,133 @@
 """
-Train a U-Net model on Luminous database
+Train U-Net with Luminous database
 """
-import random
+import argparse
+import os
 import torch
-import torch.nn.functional as F
-import torchvision.transforms.functional as TF
-from torch import nn, optim
-from torch.utils.data import DataLoader
+import torchvision.transforms as T
+
+from torch import optim
+from torch.utils.data import DataLoader, random_split
+from ignite.contrib.handlers import ProgressBar, global_step_from_engine
+from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
+from ignite.handlers import EarlyStopping, ModelCheckpoint
+from ignite.metrics import Accuracy, Loss, IoU
+from ignite.metrics.confusion_matrix import ConfusionMatrix
 
 from data import Luminous
 from model import UNet
-from utils import evaluate, iterate_train
+from utils import collate_train_batch, collate_batch, kaiming_normal_initialize, SegmentationLoss
 
+IN_CHANNELS = 1
+NUM_CLASSES = 2
+SPLIT_RATIO = (0.7, 0.15, 0.15)
 
-def custom_transforms(img, mask):
-    if random.random() > 0.5:
-        angle = random.randint(-30, 30)
-        translate = (0.4 * random.random(), 0.4 * random.random())
-        scale = 0.5 * random.random() + 0.5
-        shear = (random.randint(-30, 30), random.randint(-30, 30))
-        img = TF.affine(img, angle, translate, scale, shear)
-        mask = TF.affine(mask, angle, translate, scale, shear)
-    return img, mask
-
-
-def collate_batch(batch):
-    """Collate each batch"""
-    img_list, mask_list = [], []
-    for img, mask in batch:
-        img = F.pad(img, (0, 0, 91, 91))  # (1, 796, 820)
-        img = img[:, :796, :-24]  # (1, 796, 796)
-        mask = F.pad(mask, (0, 0, 91, 91))  # (1, 796, 820)
-        mask = mask[:, :796, :-24]  # (1, 796, 796)
-        mask = mask[:, 92:-92, 92:-92]  # (1, 612, 612)
-        img_list.append(img.unsqueeze(0))  # (1, 1, 796, 796)
-        mask_list.append(mask)  # (1, 796, 796)
-    img_tensor = torch.cat(img_list)
-    mask_tensor = torch.cat(mask_list)
-    return img_tensor, mask_tensor
-
-
-def init_xavier_uniform(module):
-    if isinstance(module, torch.nn.Conv2d) or isinstance(module, torch.nn.ConvTranspose2d):
-        torch.nn.init.xavier_normal_(module.weight)
-        module.bias.data.zero_()
-
+parser = argparse.ArgumentParser()
+parser.add_argument("--batch-size", default=2, type=int)
+parser.add_argument("--device", default="cuda", type=str)
+parser.add_argument("--dropout", default=0.5, type=float)
+parser.add_argument("--learning-rate", default=1e-3)
+parser.add_argument("--num-epochs", default=100, type=int)
+parser.add_argument("--early-stop", dest='early_stop', action='store_true')
+parser.set_defaults(early_stop=False)
+parser.add_argument("--log-interval", default=50, type=int)
+parser.add_argument("--data-dir", default=".data", type=str)
+parser.add_argument("--model-dir", default=".model", type=str)
+parser.add_argument("--encoder-dir", default=".encoder", type=str)
 
 if __name__ == "__main__":
-    root = "/home/DATA/ksh/data"
-    # train_dataset = Luminous(root=root, split="train", transforms=custom_transforms)
-    train_dataset = Luminous(root=root, split="train")
-    val_dataset = Luminous(root=root, split="val")
-    test_dataset = Luminous(root=root, split="test")
+    args = parser.parse_args()
 
+    assert os.path.exists(args.data_dir)
+    assert os.path.exists(args.model_dir)
+    assert os.path.exists(args.encoder_dir)
+    assert args.device != "cuda" or torch.cuda.is_available()
+    print("Current device:", args.device)
 
-    BATCH_SIZE = 2 
+    transform = T.Compose([
+        T.ToTensor(),
+        T.Pad((6, 5)),  # (614, 820) -> (624, 832)
+    ])
+    dataset = Luminous(root=args.data_dir, transform=transform,
+                       target_transform=transform)
+    num_train = int(len(dataset) * SPLIT_RATIO[0])
+    num_val = int(len(dataset) * SPLIT_RATIO[1])
+    num_test = len(dataset) - num_train - num_val
+    train_dataset, val_dataset, test_dataset = \
+        random_split(dataset, (num_train, num_val, num_test))
+
     train_dataloader = DataLoader(
-        train_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
+        train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_train_batch)
     val_dataloader = DataLoader(
-        val_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
+        val_dataset, batch_size=args.batch_size, collate_fn=collate_batch)
     test_dataloader = DataLoader(
-        test_dataset, batch_size=BATCH_SIZE, collate_fn=collate_batch)
+        test_dataset, batch_size=args.batch_size, collate_fn=collate_batch)
 
-
-    DEVICE = 'cuda' if torch.cuda.is_available() else 'cpu'
-    print('Current device:', DEVICE)
-
-
-    CHANNELS = [1, 64, 128, 256, 512, 1024]
-    NUM_CLASSES = 2  # 0 and 1
-    DROPOUT = 0.5  # used in the original paper
-    model = UNet(CHANNELS, NUM_CLASSES, DROPOUT).to(DEVICE)
-    model.apply(init_xavier_uniform)
-    optimizer = optim.Adam(model.parameters())
-    loss_fn = nn.CrossEntropyLoss()
+    model = UNet(IN_CHANNELS, NUM_CLASSES, dropout=args.dropout)
+    model = model.to(args.device)
+    model.apply(kaiming_normal_initialize)
     print(model)
 
+    optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
+    loss_fn = SegmentationLoss(num_classes=NUM_CLASSES)
 
-    train_history, val_history = iterate_train(
-        model, train_dataloader, val_dataloader, optimizer, loss_fn, DEVICE, num_epochs=3)
+    trainer = create_supervised_trainer(
+        model, optimizer, loss_fn, device=args.device)
+    ProgressBar().attach(trainer, output_transform=lambda x: {'loss': x})
 
+    val_metrics = {
+        "accuracy": Accuracy(),
+        "loss": Loss(loss_fn),
+        "IoU": IoU(ConfusionMatrix(NUM_CLASSES)),
+    }
+    evaluator = create_supervised_evaluator(
+        model, metrics=val_metrics, device=args.device)
+    ProgressBar().attach(evaluator)
 
-    print()
-    test_loss_history, test_pa_history, test_iou_history = \
-        evaluate(model, test_dataloader, loss_fn, DEVICE, desc="test")
-    avg_test_loss = sum(test_loss_history) / len(test_dataloader)
-    avg_test_pa = sum(test_pa_history) / len(test_dataloader)
-    avg_test_iou = sum(test_iou_history) / len(test_dataloader)
-    print(f"avg. test loss: {avg_test_loss:10.6f}")
-    print(f"avg. test pixel acc.: {avg_test_pa:7.5f}")
-    print(f"avg. test IoU.: {avg_test_iou:7.5f}")
+    @trainer.on(Events.EPOCH_STARTED)
+    def log_epoch_no(_trainer):
+        print(f"Epoch {_trainer.state.epoch}:")
+
+    @trainer.on(Events.EPOCH_COMPLETED)
+    def log_training_results(_trainer):
+        evaluator.run(train_dataloader)
+        metrics = evaluator.state.metrics
+        print("  [TRAIN DATA]",
+              f"avg. acc: {metrics['accuracy']:.5f}",
+              f"avg. loss: {metrics['loss']:.5f}",
+              f"avg. IoU: {metrics['IoU'].mean():.5f}")
+
+    def score_function(_engine):
+        val_loss = _engine.state.metrics['loss']
+        return -val_loss
+
+    if args.early_stop:
+        early_stopper = EarlyStopping(patience=10, score_function=score_function, trainer=trainer)
+
+    model_checkpoint = ModelCheckpoint(args.model_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
+    encoder_checkpoint = ModelCheckpoint(args.encoder_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
+
+    @trainer.on(Events.EPOCH_COMPLETED)
+    def log_validation_results(_trainer):
+        evaluator.run(val_dataloader)
+        metrics = evaluator.state.metrics
+        print("  [VALID DATA]",
+              f"avg. acc: {metrics['accuracy']:.5f}",
+              f"avg. loss: {metrics['loss']:.5f}",
+              f"avg. IoU: {metrics['IoU'].mean():.5f}")
+
+        if early_stopper is not None:
+            early_stopper(evaluator)
+            state_dict = early_stopper.state_dict()
+            print("  [EARLY STOP]",
+                  f"counter: {state_dict['counter']}",
+                  f"best score: {state_dict['best_score']:.5f}")
+
+        model_checkpoint(evaluator, to_save={"model": model})
+        encoder_checkpoint(evaluator, to_save={"encoder": model.encoder})
+        saved_list = model_checkpoint.state_dict()['saved']
+        saved_list = saved_list if len(saved_list) <= 3 else saved_list[-3:0]
+        saved_list = [f for p, f in saved_list]
+        print("  [CHECKPOINT]", *saved_list)
+
+    trainer.run(train_dataloader, max_epochs=args.num_epochs)

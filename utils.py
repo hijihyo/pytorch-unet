@@ -1,113 +1,90 @@
 """
-utility methods for pytorch-unet
+Utility methods
 """
-import datetime
-from pytz import timezone
-from tqdm import tqdm
+import random
+from typing import Optional
+
 import torch
-from torchmetrics.functional import jaccard_index
+import torch.nn.functional as F
+import torchvision.transforms.functional as TF
+from torch import nn, Tensor
+from torch.nn.modules.loss import _WeightedLoss
+from ignite.metrics import DiceCoefficient
+from ignite.metrics.confusion_matrix import ConfusionMatrix
 
 
-def predict_time(start_time, current_time, progress):
-    """Predict the end time"""
-    elapsed_time = current_time - start_time
-    predicted_time = start_time + elapsed_time / progress
-    return predicted_time
+def transforms(img, mask):
+    """Randomly transforms an image and a mask at the same time"""
+    if random.random() < 0.5:
+        angle = random.randint(-30, 30)
+        translate = (0.4 * random.random(), 0.4 * random.random())
+        scale = 0.6 * random.random() + 0.8
+        shear = (random.randint(-15, 15), random.randint(-15, 15))
+        img = TF.affine(img, angle, translate, scale, shear)
+        mask = TF.affine(mask, angle, translate, scale, shear)
+    if random.random() < 0.5:
+        brightness = 1 * random.random() + 0.5
+        img = TF.adjust_brightness(img, brightness)
+    if img.size()[-2:] != (624, 832):
+        img = TF.resize(img, (624, 832))
+        mask = TF.resize(mask, (624, 832))
+    return img, mask
 
 
-def train(model, dataloader, optimizer, loss_fn, device: str):
-    """Train the model for one epoch"""
-    model.train()
-    # batch_size = dataloader.batch_size
-    # num_batches = len(dataloader)
-    loss_history = []
-    pixel_acc_history = []
-    iou_history = []
-    for img, mask in tqdm(dataloader, desc="  train"):
-        img, mask = img.to(device), mask.to(device, dtype=torch.long)
-        pred = model(img)
-        loss = loss_fn(pred, mask)
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-        loss_history.append(loss.item())
-        pixel_acc = (pred.argmax(dim=1) == mask).sum().item() / \
-            (pred.size(0) * pred.size(2) * pred.size(3))
-        pixel_acc_history.append(pixel_acc)
-        iou = jaccard_index(pred.argmax(dim=1), mask, num_classes=2)
-        iou_history.append(iou)
-    return loss_history, pixel_acc_history, iou_history
+def collate_train_batch(batch):
+    """Collates a batch in training data"""
+    imgs, masks = [], []
+    for img, mask in batch:
+        img, mask = transforms(img, mask)
+        imgs.append(img.unsqueeze(0))
+        masks.append(mask)
+    img_tensor = torch.cat(imgs)  # (B, 1, 624, 832)
+    mask_tensor = torch.cat(masks).to(torch.long)  # (B, 624, 832)
+    return img_tensor, mask_tensor
 
 
-def evaluate(
-    model, dataloader, loss_fn, device: str, desc: str = "  validation"
-):
-    """Evaluate the model on dataset"""
-    model.eval()
-    # batch_size = dataloader.batch_size
-    # num_batches = len(dataloader)
-    loss_history = []
-    pixel_acc_history = []
-    iou_history = []
-    with torch.no_grad():
-        for img, mask in tqdm(dataloader, desc=desc):
-            img, mask = img.to(device), mask.to(device, dtype=torch.long)
-            pred = model(img)
-            loss = loss_fn(pred, mask)
-            loss_history.append(loss.item())
-            pixel_acc = (pred.argmax(dim=1) == mask).sum().item() / \
-                (pred.size(0) * pred.size(2) * pred.size(3))
-            pixel_acc_history.append(pixel_acc)
-            iou = jaccard_index(pred.argmax(dim=1), mask, num_classes=2)
-            iou_history.append(iou)
-    return loss_history, pixel_acc_history, iou_history
+def collate_batch(batch):
+    """Collates a batch"""
+    imgs, masks = [], []
+    for img, mask in batch:
+        imgs.append(img.unsqueeze(0))
+        masks.append(mask)
+    img_tensor = torch.cat(imgs)  # (B, 1, 624, 832)
+    mask_tensor = torch.cat(masks).to(torch.long)  # (B, 624, 832)
+    return img_tensor, mask_tensor
 
 
-def iterate_train(
-    model, train_dataloader, val_dataloader, optimizer, loss_fn,
-    device: str, num_epochs: int = 1, save_checkpoint: bool = True
-):
-    """Iterate training the model with validation"""
-    train_history = {"loss": [], "pixel_acc": [], "iou": []}
-    val_history = {"loss": [], "pixel_acc": [], "iou": []}
-    start_time = datetime.datetime.now(timezone('Asia/Seoul'))
-    for epoch in range(1, num_epochs + 1):
-        print(f"Epoch {epoch}...")
-        loss_history, pixel_acc_history, iou_history = train(model, train_dataloader,
-                                                             optimizer, loss_fn, device)
-        train_history["loss"] += loss_history
-        train_history["pixel_acc"] += pixel_acc_history
-        train_history["iou"] += iou_history
-        avg_train_loss = sum(loss_history) / len(train_dataloader)
-        avg_train_pa = sum(pixel_acc_history) / len(train_dataloader)
-        avg_train_iou = sum(iou_history) / len(train_dataloader)
+def kaiming_normal_initialize(module):
+    """Initialize module parameters with kaiming initialization"""
+    if isinstance(module, nn.Conv2d):
+        nn.init.kaiming_normal_(module.weight, nonlinearity="relu")
+        module.bias.data.zero_()
 
-        loss_history, pixel_acc_history, iou_history = evaluate(
-            model, val_dataloader, loss_fn, device)
-        val_history["loss"] += loss_history
-        val_history["pixel_acc"] += pixel_acc_history
-        val_history["iou"] += iou_history
-        avg_val_loss = sum(loss_history) / len(val_dataloader)
-        avg_val_pa = sum(pixel_acc_history) / len(val_dataloader)
-        avg_val_iou = sum(iou_history) / len(val_dataloader)
 
-        print()
-        print(f"  avg. training loss: {avg_train_loss:10.6f}")
-        print(f"  avg. training pixel acc.: {avg_train_pa:10.6f}")
-        print(f"  avg. training IoU: {avg_train_iou:10.6f}")
+class SegmentationLoss(_WeightedLoss):
+    """Combination of nn.CrossEntropyLoss and dice loss"""
 
-        print()
-        print(f"  avg. validation loss: {avg_val_loss:10.6f}")
-        print(f"  avg. validation pixel acc.: {avg_val_pa:10.6f}")
-        print(f"  avg. validation IoU: {avg_val_iou:10.6f}")
+    def __init__(self, weight: Optional[Tensor] = None,
+    size_average=None, ignore_index: int = -100, reduce=None,
+    reduction: str = 'mean', label_smoothing: float = 0.0, num_classes: int = 2) -> None:
+        super(SegmentationLoss, self).__init__(
+            weight, size_average, reduce, reduction)
+        self.ignore_index = ignore_index
+        self.label_smoothing = label_smoothing
+        self.dice_coef = \
+                DiceCoefficient(ConfusionMatrix(num_classes), ignore_index) \
+                if ignore_index >= 0 else \
+                DiceCoefficient(ConfusionMatrix(num_classes))
 
-        predicted_time = predict_time(
-            start_time, datetime.datetime.now(timezone('Asia/Seoul')), (epoch / num_epochs))
-        print("  expected end time:",
-              predicted_time.strftime("%Y-%m-%d %H:%M:%S"))
-        if save_checkpoint:
-            torch.save(model.state_dict(), f'/home/student1/.temp/epoch{epoch}.pth')
-
-    print()
-    print('Done!')
-    return train_history, val_history
+    def forward(self, pred: Tensor, target: Tensor) -> Tensor:
+        """Args:
+            input: torch.Tensor, (C, H, W) or (B, C, H, W)
+            target: torch.Tensor, (H, W) or (B, H, W)
+        """
+        ce_loss = F.cross_entropy(pred, target, weight=self.weight,
+                                  ignore_index=self.ignore_index, reduction=self.reduction,
+                                  label_smoothing=self.label_smoothing)
+        self.dice_coef.update((pred, target))
+        dice_loss = 1 - self.dice_coef.compute().mean()
+        self.dice_coef.reset()
+        return ce_loss + dice_loss.to(ce_loss.device)
