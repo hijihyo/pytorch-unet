@@ -6,11 +6,15 @@ from typing import Optional
 
 import torch
 import torch.nn.functional as F
+import torchvision.transforms as T
 import torchvision.transforms.functional as TF
 from torch import nn, Tensor
+from torch.utils.data import DataLoader, random_split
 from torch.nn.modules.loss import _WeightedLoss
 from ignite.metrics import DiceCoefficient
 from ignite.metrics.confusion_matrix import ConfusionMatrix
+
+from data import Luminous
 
 
 def transforms(img, mask):
@@ -54,6 +58,32 @@ def collate_batch(batch):
     return img_tensor, mask_tensor
 
 
+def create_dataloaders(data_dir, combine_mask, split_ratio, batch_size):
+    transform = T.Compose([
+        T.ToTensor(),
+        T.Pad((6, 5)),  # (614, 820) -> (624, 832)
+    ])
+    dataset = Luminous(
+        root=data_dir,
+        combine_mask=combine_mask,
+        transform=transform,
+        target_transform=transform
+    )
+    num_train = int(len(dataset) * split_ratio[0])
+    num_val = int(len(dataset) * split_ratio[1])
+    num_test = len(dataset) - num_train - num_val
+    train_dataset, val_dataset, test_dataset = \
+        random_split(dataset, (num_train, num_val, num_test))
+
+    train_dataloader = DataLoader(
+        train_dataset, batch_size=batch_size, shuffle=True, collate_fn=collate_train_batch)
+    val_dataloader = DataLoader(
+        val_dataset, batch_size=batch_size, collate_fn=collate_batch)
+    test_dataloader = DataLoader(
+        test_dataset, batch_size=batch_size, collate_fn=collate_batch)
+    return train_dataloader, val_dataloader, test_dataloader
+
+
 def kaiming_normal_initialize(module):
     """Initialize module parameters with kaiming initialization"""
     if isinstance(module, nn.Conv2d):
@@ -65,16 +95,16 @@ class SegmentationLoss(_WeightedLoss):
     """Combination of nn.CrossEntropyLoss and dice loss"""
 
     def __init__(self, weight: Optional[Tensor] = None,
-    size_average=None, ignore_index: int = -100, reduce=None,
-    reduction: str = 'mean', label_smoothing: float = 0.0, num_classes: int = 2) -> None:
+                 size_average=None, ignore_index: int = -100, reduce=None,
+                 reduction: str = 'mean', label_smoothing: float = 0.0, num_classes: int = 2) -> None:
         super(SegmentationLoss, self).__init__(
             weight, size_average, reduce, reduction)
         self.ignore_index = ignore_index
         self.label_smoothing = label_smoothing
         self.dice_coef = \
-                DiceCoefficient(ConfusionMatrix(num_classes), ignore_index) \
-                if ignore_index >= 0 else \
-                DiceCoefficient(ConfusionMatrix(num_classes))
+            DiceCoefficient(ConfusionMatrix(num_classes), ignore_index) \
+            if ignore_index >= 0 else \
+            DiceCoefficient(ConfusionMatrix(num_classes))
 
     def forward(self, pred: Tensor, target: Tensor) -> Tensor:
         """Args:
