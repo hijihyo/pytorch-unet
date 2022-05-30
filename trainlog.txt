@@ -1,5 +1,13 @@
-(pytorch-unet) student1@library2:/home/DATA/ksh/pytorch-unet$ python train.py --data-dir ../data --model-dir ~/.model --encoder-dir ~/.encoder --early-stop --batch-size 2
+Data is stored at ../data
+Model will be stored at /home/student1/.model
+Encoder will be stored at /home/student1/.encoder
 Current device: cuda
+
+Number of (train, val, test) examples: 238 51 52
+Batch size: 2
+Dropout: 0.5
+Learning rate: 0.001
+Early stopping: ON (patience: 10)
 UNet(
   (encoder): UNetEncoder(
     (blocks): ModuleList(
@@ -126,334 +134,319 @@ UNet(
     )
   )
 )
+
 Epoch 1:
-  [TRAIN DATA] avg. acc: 0.92658 avg. loss: 0.97993 avg. IoU: 0.46539                                                          
-  [VALID DATA] avg. acc: 0.93527 avg. loss: 0.96301 avg. IoU: 0.46928                                                          
-  [EARLY STOP] counter: 0 best score: -0.96301
-  [CHECKPOINT] model_1_-0.9630.pt
+  [TRAIN DATA] avg. acc: 0.88158 | avg. loss: 0.77238 | avg. IoU: 0.58328
+  [VALID DATA] avg. acc: 0.90151 | avg. loss: 0.71914 | avg. IoU: 0.62227
+  [EARLY STOP] counter: 0 | best score: -0.71914
 Epoch 2:
-  [TRAIN DATA] avg. acc: 0.92650 avg. loss: 0.94113 avg. IoU: 0.46562                                                          
-  [VALID DATA] avg. acc: 0.93451 avg. loss: 0.92614 avg. IoU: 0.46905                                                          
-  [EARLY STOP] counter: 0 best score: -0.92614
-  [CHECKPOINT] model_1_-0.9630.pt model_2_-0.9261.pt
+  [TRAIN DATA] avg. acc: 0.89824 | avg. loss: 0.69397 | avg. IoU: 0.62117
+  [VALID DATA] avg. acc: 0.91094 | avg. loss: 0.67282 | avg. IoU: 0.63621
+  [EARLY STOP] counter: 0 | best score: -0.67282
 Epoch 3:
-  [TRAIN DATA] avg. acc: 0.92744 avg. loss: 0.87130 avg. IoU: 0.47058                                                          
-  [VALID DATA] avg. acc: 0.93350 avg. loss: 0.86116 avg. IoU: 0.47433                                                          
-  [EARLY STOP] counter: 0 best score: -0.86116
-  [CHECKPOINT] model_1_-0.9630.pt model_2_-0.9261.pt model_3_-0.8612.pt
+  [TRAIN DATA] avg. acc: 0.93029 | avg. loss: 0.72533 | avg. IoU: 0.58510
+  [VALID DATA] avg. acc: 0.94326 | avg. loss: 0.67524 | avg. IoU: 0.61892
+  [EARLY STOP] counter: 1 | best score: -0.67282
 Epoch 4:
-  [TRAIN DATA] avg. acc: 0.92806 avg. loss: 0.85949 avg. IoU: 0.46410                                                          
-  [VALID DATA] avg. acc: 0.93543 avg. loss: 0.84484 avg. IoU: 0.46777                                                          
-  [EARLY STOP] counter: 0 best score: -0.84484
-  [CHECKPOINT] model_2_-0.9261.pt model_3_-0.8612.pt model_4_-0.8448.pt
+  [TRAIN DATA] avg. acc: 0.93736 | avg. loss: 0.65148 | avg. IoU: 0.60450
+  [VALID DATA] avg. acc: 0.95133 | avg. loss: 0.57102 | avg. IoU: 0.67230
+  [EARLY STOP] counter: 0 | best score: -0.57102
 Epoch 5:
-  [TRAIN DATA] avg. acc: 0.92684 avg. loss: 0.83352 avg. IoU: 0.46355                                                          
-  [VALID DATA] avg. acc: 0.93544 avg. loss: 0.82049 avg. IoU: 0.46782                                                          
-  [EARLY STOP] counter: 0 best score: -0.82049
-  [CHECKPOINT] model_3_-0.8612.pt model_4_-0.8448.pt model_5_-0.8205.pt
+  [TRAIN DATA] avg. acc: 0.93384 | avg. loss: 0.58841 | avg. IoU: 0.64783
+  [VALID DATA] avg. acc: 0.94691 | avg. loss: 0.53893 | avg. IoU: 0.68071
+  [EARLY STOP] counter: 0 | best score: -0.53893
 Epoch 6:
-  [TRAIN DATA] avg. acc: 0.92906 avg. loss: 0.82003 avg. IoU: 0.46469                                                          
-  [VALID DATA] avg. acc: 0.93553 avg. loss: 0.80927 avg. IoU: 0.46785                                                          
-  [EARLY STOP] counter: 0 best score: -0.80927
-  [CHECKPOINT] model_4_-0.8448.pt model_5_-0.8205.pt model_6_-0.8093.pt
+  [TRAIN DATA] avg. acc: 0.93690 | avg. loss: 0.58770 | avg. IoU: 0.64349
+  [VALID DATA] avg. acc: 0.94811 | avg. loss: 0.51828 | avg. IoU: 0.70019
+  [EARLY STOP] counter: 0 | best score: -0.51828
 Epoch 7:
-  [TRAIN DATA] avg. acc: 0.92965 avg. loss: 0.78280 avg. IoU: 0.46490                                                          
-  [VALID DATA] avg. acc: 0.93551 avg. loss: 0.77187 avg. IoU: 0.46785                                                          
-  [EARLY STOP] counter: 0 best score: -0.77187
-  [CHECKPOINT] model_5_-0.8205.pt model_6_-0.8093.pt model_7_-0.7719.pt
+  [TRAIN DATA] avg. acc: 0.93058 | avg. loss: 0.65334 | avg. IoU: 0.55297
+  [VALID DATA] avg. acc: 0.94353 | avg. loss: 0.58727 | avg. IoU: 0.59142
+  [EARLY STOP] counter: 1 | best score: -0.51828
 Epoch 8:
-  [TRAIN DATA] avg. acc: 0.93057 avg. loss: 0.76817 avg. IoU: 0.46528                                                          
-  [VALID DATA] avg. acc: 0.93556 avg. loss: 0.75713 avg. IoU: 0.46778                                                          
-  [EARLY STOP] counter: 0 best score: -0.75713
-  [CHECKPOINT] model_6_-0.8093.pt model_7_-0.7719.pt model_8_-0.7571.pt
+  [TRAIN DATA] avg. acc: 0.94330 | avg. loss: 0.51567 | avg. IoU: 0.64577
+  [VALID DATA] avg. acc: 0.95768 | avg. loss: 0.43621 | avg. IoU: 0.71020
+  [EARLY STOP] counter: 0 | best score: -0.43621
 Epoch 9:
-  [TRAIN DATA] avg. acc: 0.93807 avg. loss: 0.48596 avg. IoU: 0.65012                                                          
-  [VALID DATA] avg. acc: 0.94709 avg. loss: 0.44206 avg. IoU: 0.68027                                                          
-  [EARLY STOP] counter: 0 best score: -0.44206
-  [CHECKPOINT] model_7_-0.7719.pt model_8_-0.7571.pt model_9_-0.4421.pt
+  [TRAIN DATA] avg. acc: 0.93547 | avg. loss: 0.53070 | avg. IoU: 0.61911
+  [VALID DATA] avg. acc: 0.95421 | avg. loss: 0.44540 | avg. IoU: 0.68417
+  [EARLY STOP] counter: 1 | best score: -0.43621
 Epoch 10:
-  [TRAIN DATA] avg. acc: 0.92494 avg. loss: 0.48619 avg. IoU: 0.66728                                                          
-  [VALID DATA] avg. acc: 0.93177 avg. loss: 0.46103 avg. IoU: 0.68288                                                          
-  [EARLY STOP] counter: 1 best score: -0.44206
-  [CHECKPOINT] model_8_-0.7571.pt model_10_-0.4610.pt model_9_-0.4421.pt
+  [TRAIN DATA] avg. acc: 0.91145 | avg. loss: 0.52142 | avg. IoU: 0.66908
+  [VALID DATA] avg. acc: 0.92740 | avg. loss: 0.46779 | avg. IoU: 0.69967
+  [EARLY STOP] counter: 2 | best score: -0.43621
 Epoch 11:
-  [TRAIN DATA] avg. acc: 0.94504 avg. loss: 0.46555 avg. IoU: 0.64475                                                          
-  [VALID DATA] avg. acc: 0.95348 avg. loss: 0.41302 avg. IoU: 0.68826                                                          
-  [EARLY STOP] counter: 0 best score: -0.41302
-  [CHECKPOINT] model_10_-0.4610.pt model_9_-0.4421.pt model_11_-0.4130.pt
+  [TRAIN DATA] avg. acc: 0.93505 | avg. loss: 0.43941 | avg. IoU: 0.71490
+  [VALID DATA] avg. acc: 0.94091 | avg. loss: 0.42366 | avg. IoU: 0.72675
+  [EARLY STOP] counter: 0 | best score: -0.42366
 Epoch 12:
-  [TRAIN DATA] avg. acc: 0.94096 avg. loss: 0.46359 avg. IoU: 0.64909                                                          
-  [VALID DATA] avg. acc: 0.95204 avg. loss: 0.40122 avg. IoU: 0.69158                                                          
-  [EARLY STOP] counter: 0 best score: -0.40122
-  [CHECKPOINT] model_9_-0.4421.pt model_11_-0.4130.pt model_12_-0.4012.pt
+  [TRAIN DATA] avg. acc: 0.94483 | avg. loss: 0.41053 | avg. IoU: 0.73052
+  [VALID DATA] avg. acc: 0.95680 | avg. loss: 0.36507 | avg. IoU: 0.76685
+  [EARLY STOP] counter: 0 | best score: -0.36507
 Epoch 13:
-Epoch [13/100]: [100/135]  74%|███████████████████████████████████████████████████▊                  , loss=0.303 [01:17<00:24]  [TRAIN DATA] avg. acc: 0.94279 avg. loss: 0.46605 avg. IoU: 0.63314                                                          
-  [VALID DATA] avg. acc: 0.95652 avg. loss: 0.38133 avg. IoU: 0.70238                                                          
-  [EARLY STOP] counter: 0 best score: -0.38133
-  [CHECKPOINT] model_11_-0.4130.pt model_12_-0.4012.pt model_13_-0.3813.pt
+  [TRAIN DATA] avg. acc: 0.94828 | avg. loss: 0.39321 | avg. IoU: 0.71242
+  [VALID DATA] avg. acc: 0.96195 | avg. loss: 0.31810 | avg. IoU: 0.77517
+  [EARLY STOP] counter: 0 | best score: -0.31810
 Epoch 14:
-  [TRAIN DATA] avg. acc: 0.93603 avg. loss: 0.39918 avg. IoU: 0.69323                                                          
-  [VALID DATA] avg. acc: 0.94030 avg. loss: 0.37907 avg. IoU: 0.70610                                                          
-  [EARLY STOP] counter: 0 best score: -0.37907
-  [CHECKPOINT] model_12_-0.4012.pt model_13_-0.3813.pt model_14_-0.3791.pt
+  [TRAIN DATA] avg. acc: 0.91473 | avg. loss: 0.47986 | avg. IoU: 0.67780
+  [VALID DATA] avg. acc: 0.91862 | avg. loss: 0.46990 | avg. IoU: 0.68308
+  [EARLY STOP] counter: 1 | best score: -0.31810
 Epoch 15:
-  [TRAIN DATA] avg. acc: 0.94028 avg. loss: 0.38611 avg. IoU: 0.69467                                                          
-  [VALID DATA] avg. acc: 0.94507 avg. loss: 0.35763 avg. IoU: 0.71587                                                          
-  [EARLY STOP] counter: 0 best score: -0.35763
-  [CHECKPOINT] model_13_-0.3813.pt model_14_-0.3791.pt model_15_-0.3576.pt
+  [TRAIN DATA] avg. acc: 0.95441 | avg. loss: 0.32755 | avg. IoU: 0.75779
+  [VALID DATA] avg. acc: 0.96490 | avg. loss: 0.29536 | avg. IoU: 0.77626
+  [EARLY STOP] counter: 0 | best score: -0.29536
 Epoch 16:
-  [TRAIN DATA] avg. acc: 0.94426 avg. loss: 0.48147 avg. IoU: 0.61394                                                          
-  [VALID DATA] avg. acc: 0.95319 avg. loss: 0.41967 avg. IoU: 0.65814                                                          
-  [EARLY STOP] counter: 1 best score: -0.35763
-  [CHECKPOINT] model_13_-0.3813.pt model_14_-0.3791.pt model_15_-0.3576.pt
+  [TRAIN DATA] avg. acc: 0.93548 | avg. loss: 0.38383 | avg. IoU: 0.73000
+  [VALID DATA] avg. acc: 0.95327 | avg. loss: 0.32818 | avg. IoU: 0.76216
+  [EARLY STOP] counter: 1 | best score: -0.29536
 Epoch 17:
-  [TRAIN DATA] avg. acc: 0.94951 avg. loss: 0.37773 avg. IoU: 0.69052                                                          
-  [VALID DATA] avg. acc: 0.95791 avg. loss: 0.32999 avg. IoU: 0.73562                                                          
-  [EARLY STOP] counter: 0 best score: -0.32999
-  [CHECKPOINT] model_14_-0.3791.pt model_15_-0.3576.pt model_17_-0.3300.pt
+  [TRAIN DATA] avg. acc: 0.94773 | avg. loss: 0.39220 | avg. IoU: 0.67866
+  [VALID DATA] avg. acc: 0.95875 | avg. loss: 0.34683 | avg. IoU: 0.70969
+  [EARLY STOP] counter: 2 | best score: -0.29536
 Epoch 18:
-  [TRAIN DATA] avg. acc: 0.94411 avg. loss: 0.35767 avg. IoU: 0.71300                                                          
-  [VALID DATA] avg. acc: 0.94853 avg. loss: 0.33189 avg. IoU: 0.73024                                                          
-  [EARLY STOP] counter: 1 best score: -0.32999
-  [CHECKPOINT] model_15_-0.3576.pt model_18_-0.3319.pt model_17_-0.3300.pt
+  [TRAIN DATA] avg. acc: 0.95103 | avg. loss: 0.32573 | avg. IoU: 0.75837
+  [VALID DATA] avg. acc: 0.96018 | avg. loss: 0.28813 | avg. IoU: 0.78454
+  [EARLY STOP] counter: 0 | best score: -0.28813
 Epoch 19:
-  [TRAIN DATA] avg. acc: 0.95052 avg. loss: 0.33944 avg. IoU: 0.71767                                                          
-  [VALID DATA] avg. acc: 0.95730 avg. loss: 0.29526 avg. IoU: 0.75539                                                          
-  [EARLY STOP] counter: 0 best score: -0.29526
-  [CHECKPOINT] model_18_-0.3319.pt model_17_-0.3300.pt model_19_-0.2953.pt
+  [TRAIN DATA] avg. acc: 0.94712 | avg. loss: 0.40179 | avg. IoU: 0.66779
+  [VALID DATA] avg. acc: 0.95704 | avg. loss: 0.36084 | avg. IoU: 0.69204
+  [EARLY STOP] counter: 1 | best score: -0.28813
 Epoch 20:
-  [TRAIN DATA] avg. acc: 0.94950 avg. loss: 0.40781 avg. IoU: 0.65454                                                          
-  [VALID DATA] avg. acc: 0.95832 avg. loss: 0.36792 avg. IoU: 0.68344                                                          
-  [EARLY STOP] counter: 1 best score: -0.29526
-  [CHECKPOINT] model_18_-0.3319.pt model_17_-0.3300.pt model_19_-0.2953.pt
+  [TRAIN DATA] avg. acc: 0.95006 | avg. loss: 0.35971 | avg. IoU: 0.70589
+  [VALID DATA] avg. acc: 0.95966 | avg. loss: 0.33000 | avg. IoU: 0.71811
+  [EARLY STOP] counter: 2 | best score: -0.28813
 Epoch 21:
-  [TRAIN DATA] avg. acc: 0.94754 avg. loss: 0.40930 avg. IoU: 0.65081                                                          
-  [VALID DATA] avg. acc: 0.96098 avg. loss: 0.31365 avg. IoU: 0.72356                                                          
-  [EARLY STOP] counter: 2 best score: -0.29526
-  [CHECKPOINT] model_17_-0.3300.pt model_21_-0.3137.pt model_19_-0.2953.pt
+  [TRAIN DATA] avg. acc: 0.94949 | avg. loss: 0.30475 | avg. IoU: 0.76106
+  [VALID DATA] avg. acc: 0.96297 | avg. loss: 0.25912 | avg. IoU: 0.79201
+  [EARLY STOP] counter: 0 | best score: -0.25912
 Epoch 22:
-  [TRAIN DATA] avg. acc: 0.95335 avg. loss: 0.31305 avg. IoU: 0.72785                                                          
-  [VALID DATA] avg. acc: 0.96451 avg. loss: 0.24905 avg. IoU: 0.77901                                                          
-  [EARLY STOP] counter: 0 best score: -0.24905
-  [CHECKPOINT] model_21_-0.3137.pt model_19_-0.2953.pt model_22_-0.2490.pt
+  [TRAIN DATA] avg. acc: 0.94698 | avg. loss: 0.38151 | avg. IoU: 0.68406
+  [VALID DATA] avg. acc: 0.95940 | avg. loss: 0.32467 | avg. IoU: 0.72290
+  [EARLY STOP] counter: 1 | best score: -0.25912
 Epoch 23:
-  [TRAIN DATA] avg. acc: 0.95005 avg. loss: 0.32482 avg. IoU: 0.72212                                                          
-  [VALID DATA] avg. acc: 0.95862 avg. loss: 0.28451 avg. IoU: 0.75064                                                          
-  [EARLY STOP] counter: 1 best score: -0.24905
-  [CHECKPOINT] model_19_-0.2953.pt model_23_-0.2845.pt model_22_-0.2490.pt
+  [TRAIN DATA] avg. acc: 0.96154 | avg. loss: 0.26573 | avg. IoU: 0.77710
+  [VALID DATA] avg. acc: 0.96602 | avg. loss: 0.25466 | avg. IoU: 0.77783
+  [EARLY STOP] counter: 0 | best score: -0.25466
 Epoch 24:
-  [TRAIN DATA] avg. acc: 0.95240 avg. loss: 0.33168 avg. IoU: 0.70690                                                          
-  [VALID DATA] avg. acc: 0.96256 avg. loss: 0.26950 avg. IoU: 0.75817                                                          
-  [EARLY STOP] counter: 2 best score: -0.24905
-  [CHECKPOINT] model_23_-0.2845.pt model_24_-0.2695.pt model_22_-0.2490.pt
+  [TRAIN DATA] avg. acc: 0.94258 | avg. loss: 0.31972 | avg. IoU: 0.74180
+  [VALID DATA] avg. acc: 0.94836 | avg. loss: 0.30289 | avg. IoU: 0.75136
+  [EARLY STOP] counter: 1 | best score: -0.25466
 Epoch 25:
-  [TRAIN DATA] avg. acc: 0.95366 avg. loss: 0.33398 avg. IoU: 0.70191                                                          
-  [VALID DATA] avg. acc: 0.96203 avg. loss: 0.28261 avg. IoU: 0.74159                                                          
-  [EARLY STOP] counter: 3 best score: -0.24905
-  [CHECKPOINT] model_25_-0.2826.pt model_24_-0.2695.pt model_22_-0.2490.pt
+  [TRAIN DATA] avg. acc: 0.95556 | avg. loss: 0.27413 | avg. IoU: 0.77516
+  [VALID DATA] avg. acc: 0.96175 | avg. loss: 0.27109 | avg. IoU: 0.76982
+  [EARLY STOP] counter: 2 | best score: -0.25466
 Epoch 26:
-  [TRAIN DATA] avg. acc: 0.95485 avg. loss: 0.29430 avg. IoU: 0.74136                                                          
-  [VALID DATA] avg. acc: 0.96459 avg. loss: 0.24124 avg. IoU: 0.77922                                                          
-  [EARLY STOP] counter: 0 best score: -0.24124
-  [CHECKPOINT] model_24_-0.2695.pt model_22_-0.2490.pt model_26_-0.2412.pt
+  [TRAIN DATA] avg. acc: 0.95488 | avg. loss: 0.31861 | avg. IoU: 0.71550
+  [VALID DATA] avg. acc: 0.96053 | avg. loss: 0.30905 | avg. IoU: 0.71412
+  [EARLY STOP] counter: 3 | best score: -0.25466
 Epoch 27:
-  [TRAIN DATA] avg. acc: 0.95134 avg. loss: 0.32784 avg. IoU: 0.70719                                                          
-  [VALID DATA] avg. acc: 0.96463 avg. loss: 0.24855 avg. IoU: 0.76987                                                          
-  [EARLY STOP] counter: 1 best score: -0.24124
-  [CHECKPOINT] model_22_-0.2490.pt model_27_-0.2486.pt model_26_-0.2412.pt
+  [TRAIN DATA] avg. acc: 0.96232 | avg. loss: 0.26078 | avg. IoU: 0.76943
+  [VALID DATA] avg. acc: 0.96821 | avg. loss: 0.24074 | avg. IoU: 0.77855
+  [EARLY STOP] counter: 0 | best score: -0.24074
 Epoch 28:
-  [TRAIN DATA] avg. acc: 0.95362 avg. loss: 0.28540 avg. IoU: 0.74326                                                          
-  [VALID DATA] avg. acc: 0.96337 avg. loss: 0.24472 avg. IoU: 0.77344                                                          
-  [EARLY STOP] counter: 2 best score: -0.24124
-  [CHECKPOINT] model_27_-0.2486.pt model_28_-0.2447.pt model_26_-0.2412.pt
+  [TRAIN DATA] avg. acc: 0.96334 | avg. loss: 0.24657 | avg. IoU: 0.77722
+  [VALID DATA] avg. acc: 0.97117 | avg. loss: 0.21394 | avg. IoU: 0.80192
+  [EARLY STOP] counter: 0 | best score: -0.21394
 Epoch 29:
-  [TRAIN DATA] avg. acc: 0.94769 avg. loss: 0.30197 avg. IoU: 0.73426                                                          
-  [VALID DATA] avg. acc: 0.95531 avg. loss: 0.27209 avg. IoU: 0.75271                                                          
-  [EARLY STOP] counter: 3 best score: -0.24124
-  [CHECKPOINT] model_27_-0.2486.pt model_28_-0.2447.pt model_26_-0.2412.pt
+  [TRAIN DATA] avg. acc: 0.95938 | avg. loss: 0.27283 | avg. IoU: 0.76060
+  [VALID DATA] avg. acc: 0.96576 | avg. loss: 0.26126 | avg. IoU: 0.75762
+  [EARLY STOP] counter: 1 | best score: -0.21394
 Epoch 30:
-  [TRAIN DATA] avg. acc: 0.91042 avg. loss: 0.45462 avg. IoU: 0.66159                                                          
-  [VALID DATA] avg. acc: 0.92224 avg. loss: 0.40957 avg. IoU: 0.67953                                                          
-  [EARLY STOP] counter: 4 best score: -0.24124
-  [CHECKPOINT] model_27_-0.2486.pt model_28_-0.2447.pt model_26_-0.2412.pt
+  [TRAIN DATA] avg. acc: 0.96452 | avg. loss: 0.23662 | avg. IoU: 0.78356
+  [VALID DATA] avg. acc: 0.97275 | avg. loss: 0.19774 | avg. IoU: 0.81432
+  [EARLY STOP] counter: 0 | best score: -0.19774
 Epoch 31:
-  [TRAIN DATA] avg. acc: 0.95754 avg. loss: 0.28135 avg. IoU: 0.74318                                                          
-  [VALID DATA] avg. acc: 0.96496 avg. loss: 0.25237 avg. IoU: 0.76453                                                          
-  [EARLY STOP] counter: 5 best score: -0.24124
-  [CHECKPOINT] model_27_-0.2486.pt model_28_-0.2447.pt model_26_-0.2412.pt
+  [TRAIN DATA] avg. acc: 0.96078 | avg. loss: 0.27240 | avg. IoU: 0.75004
+  [VALID DATA] avg. acc: 0.96672 | avg. loss: 0.25303 | avg. IoU: 0.76005
+  [EARLY STOP] counter: 1 | best score: -0.19774
 Epoch 32:
-  [TRAIN DATA] avg. acc: 0.95716 avg. loss: 0.28552 avg. IoU: 0.73608                                                          
-  [VALID DATA] avg. acc: 0.96754 avg. loss: 0.22440 avg. IoU: 0.78316                                                          
-  [EARLY STOP] counter: 0 best score: -0.22440
-  [CHECKPOINT] model_28_-0.2447.pt model_26_-0.2412.pt model_32_-0.2244.pt
+  [TRAIN DATA] avg. acc: 0.96469 | avg. loss: 0.22722 | avg. IoU: 0.79101
+  [VALID DATA] avg. acc: 0.97106 | avg. loss: 0.20593 | avg. IoU: 0.80420
+  [EARLY STOP] counter: 2 | best score: -0.19774
 Epoch 33:
-  [TRAIN DATA] avg. acc: 0.95569 avg. loss: 0.30694 avg. IoU: 0.71428                                                          
-  [VALID DATA] avg. acc: 0.96025 avg. loss: 0.28762 avg. IoU: 0.72888                                                          
-  [EARLY STOP] counter: 1 best score: -0.22440
-  [CHECKPOINT] model_28_-0.2447.pt model_26_-0.2412.pt model_32_-0.2244.pt
+  [TRAIN DATA] avg. acc: 0.96425 | avg. loss: 0.24165 | avg. IoU: 0.77742
+  [VALID DATA] avg. acc: 0.97451 | avg. loss: 0.18046 | avg. IoU: 0.82932
+  [EARLY STOP] counter: 0 | best score: -0.18046
 Epoch 34:
-  [TRAIN DATA] avg. acc: 0.95951 avg. loss: 0.25955 avg. IoU: 0.75359                                                          
-  [VALID DATA] avg. acc: 0.96753 avg. loss: 0.22572 avg. IoU: 0.78127                                                          
-  [EARLY STOP] counter: 2 best score: -0.22440
-  [CHECKPOINT] model_26_-0.2412.pt model_34_-0.2257.pt model_32_-0.2244.pt
+  [TRAIN DATA] avg. acc: 0.96031 | avg. loss: 0.26373 | avg. IoU: 0.74378
+  [VALID DATA] avg. acc: 0.96733 | avg. loss: 0.24114 | avg. IoU: 0.76480
+  [EARLY STOP] counter: 1 | best score: -0.18046
 Epoch 35:
-  [TRAIN DATA] avg. acc: 0.95945 avg. loss: 0.25364 avg. IoU: 0.75998                                                          
-  [VALID DATA] avg. acc: 0.96670 avg. loss: 0.21466 avg. IoU: 0.78983                                                          
-  [EARLY STOP] counter: 0 best score: -0.21466
-  [CHECKPOINT] model_34_-0.2257.pt model_32_-0.2244.pt model_35_-0.2147.pt
+  [TRAIN DATA] avg. acc: 0.96037 | avg. loss: 0.22975 | avg. IoU: 0.80093
+  [VALID DATA] avg. acc: 0.96822 | avg. loss: 0.20525 | avg. IoU: 0.81711
+  [EARLY STOP] counter: 2 | best score: -0.18046
 Epoch 36:
-  [TRAIN DATA] avg. acc: 0.96059 avg. loss: 0.26321 avg. IoU: 0.75013                                                          
-  [VALID DATA] avg. acc: 0.96696 avg. loss: 0.22789 avg. IoU: 0.77716                                                          
-  [EARLY STOP] counter: 1 best score: -0.21466
-  [CHECKPOINT] model_34_-0.2257.pt model_32_-0.2244.pt model_35_-0.2147.pt
+  [TRAIN DATA] avg. acc: 0.96799 | avg. loss: 0.19877 | avg. IoU: 0.81793
+  [VALID DATA] avg. acc: 0.97349 | avg. loss: 0.17966 | avg. IoU: 0.82763
+  [EARLY STOP] counter: 0 | best score: -0.17966
 Epoch 37:
-  [TRAIN DATA] avg. acc: 0.95867 avg. loss: 0.25844 avg. IoU: 0.75611                                                          
-  [VALID DATA] avg. acc: 0.96737 avg. loss: 0.20363 avg. IoU: 0.79864                                                          
-  [EARLY STOP] counter: 0 best score: -0.20363
-  [CHECKPOINT] model_32_-0.2244.pt model_35_-0.2147.pt model_37_-0.2036.pt
+  [TRAIN DATA] avg. acc: 0.96302 | avg. loss: 0.24436 | avg. IoU: 0.78330
+  [VALID DATA] avg. acc: 0.97527 | avg. loss: 0.16628 | avg. IoU: 0.84334
+  [EARLY STOP] counter: 0 | best score: -0.16628
 Epoch 38:
-  [TRAIN DATA] avg. acc: 0.95983 avg. loss: 0.27281 avg. IoU: 0.74036                                                          
-  [VALID DATA] avg. acc: 0.96645 avg. loss: 0.23851 avg. IoU: 0.76962                                                          
-  [EARLY STOP] counter: 1 best score: -0.20363
-  [CHECKPOINT] model_32_-0.2244.pt model_35_-0.2147.pt model_37_-0.2036.pt
+  [TRAIN DATA] avg. acc: 0.96573 | avg. loss: 0.22244 | avg. IoU: 0.80214
+  [VALID DATA] avg. acc: 0.97237 | avg. loss: 0.18778 | avg. IoU: 0.82934
+  [EARLY STOP] counter: 1 | best score: -0.16628
 Epoch 39:
-  [TRAIN DATA] avg. acc: 0.96231 avg. loss: 0.27050 avg. IoU: 0.74478                                                          
-  [VALID DATA] avg. acc: 0.97139 avg. loss: 0.20428 avg. IoU: 0.79772                                                          
-  [EARLY STOP] counter: 2 best score: -0.20363
-  [CHECKPOINT] model_35_-0.2147.pt model_39_-0.2043.pt model_37_-0.2036.pt
+  [TRAIN DATA] avg. acc: 0.93804 | avg. loss: 0.50675 | avg. IoU: 0.59718
+  [VALID DATA] avg. acc: 0.94516 | avg. loss: 0.50895 | avg. IoU: 0.59214
+  [EARLY STOP] counter: 2 | best score: -0.16628
 Epoch 40:
-  [TRAIN DATA] avg. acc: 0.95785 avg. loss: 0.27445 avg. IoU: 0.73601                                                          
-  [VALID DATA] avg. acc: 0.96765 avg. loss: 0.23659 avg. IoU: 0.76378                                                          
-  [EARLY STOP] counter: 3 best score: -0.20363
-  [CHECKPOINT] model_35_-0.2147.pt model_39_-0.2043.pt model_37_-0.2036.pt
+  [TRAIN DATA] avg. acc: 0.97017 | avg. loss: 0.19098 | avg. IoU: 0.81756
+  [VALID DATA] avg. acc: 0.97575 | avg. loss: 0.16309 | avg. IoU: 0.84011
+  [EARLY STOP] counter: 0 | best score: -0.16309
 Epoch 41:
-  [TRAIN DATA] avg. acc: 0.95778 avg. loss: 0.28225 avg. IoU: 0.73611                                                          
-  [VALID DATA] avg. acc: 0.96563 avg. loss: 0.23744 avg. IoU: 0.76667                                                          
-  [EARLY STOP] counter: 4 best score: -0.20363
-  [CHECKPOINT] model_35_-0.2147.pt model_39_-0.2043.pt model_37_-0.2036.pt
+  [TRAIN DATA] avg. acc: 0.96224 | avg. loss: 0.25325 | avg. IoU: 0.76695
+  [VALID DATA] avg. acc: 0.96652 | avg. loss: 0.24589 | avg. IoU: 0.76678
+  [EARLY STOP] counter: 1 | best score: -0.16309
 Epoch 42:
-  [TRAIN DATA] avg. acc: 0.96123 avg. loss: 0.23185 avg. IoU: 0.77543                                                          
-  [VALID DATA] avg. acc: 0.96831 avg. loss: 0.20438 avg. IoU: 0.79613                                                          
-  [EARLY STOP] counter: 5 best score: -0.20363
-  [CHECKPOINT] model_42_-0.2044.pt model_39_-0.2043.pt model_37_-0.2036.pt
+  [TRAIN DATA] avg. acc: 0.96934 | avg. loss: 0.20193 | avg. IoU: 0.81097
+  [VALID DATA] avg. acc: 0.97404 | avg. loss: 0.18696 | avg. IoU: 0.81802
+  [EARLY STOP] counter: 2 | best score: -0.16309
 Epoch 43:
-  [TRAIN DATA] avg. acc: 0.95725 avg. loss: 0.24592 avg. IoU: 0.76366                                                          
-  [VALID DATA] avg. acc: 0.96885 avg. loss: 0.19340 avg. IoU: 0.80484                                                          
-  [EARLY STOP] counter: 0 best score: -0.19340
-  [CHECKPOINT] model_39_-0.2043.pt model_37_-0.2036.pt model_43_-0.1934.pt
+  [TRAIN DATA] avg. acc: 0.97280 | avg. loss: 0.17038 | avg. IoU: 0.83434
+  [VALID DATA] avg. acc: 0.97506 | avg. loss: 0.16918 | avg. IoU: 0.82813
+  [EARLY STOP] counter: 3 | best score: -0.16309
 Epoch 44:
-  [TRAIN DATA] avg. acc: 0.96282 avg. loss: 0.24077 avg. IoU: 0.76799                                                          
-  [VALID DATA] avg. acc: 0.96856 avg. loss: 0.21061 avg. IoU: 0.78795                                                          
-  [EARLY STOP] counter: 1 best score: -0.19340
-  [CHECKPOINT] model_39_-0.2043.pt model_37_-0.2036.pt model_43_-0.1934.pt
+  [TRAIN DATA] avg. acc: 0.96896 | avg. loss: 0.19597 | avg. IoU: 0.80985
+  [VALID DATA] avg. acc: 0.97420 | avg. loss: 0.17765 | avg. IoU: 0.82242
+  [EARLY STOP] counter: 4 | best score: -0.16309
 Epoch 45:
-  [TRAIN DATA] avg. acc: 0.94952 avg. loss: 0.26978 avg. IoU: 0.75013                                                          
-  [VALID DATA] avg. acc: 0.96337 avg. loss: 0.21740 avg. IoU: 0.78472                                                          
-  [EARLY STOP] counter: 2 best score: -0.19340
-  [CHECKPOINT] model_39_-0.2043.pt model_37_-0.2036.pt model_43_-0.1934.pt
+  [TRAIN DATA] avg. acc: 0.97606 | avg. loss: 0.14580 | avg. IoU: 0.86224
+  [VALID DATA] avg. acc: 0.97825 | avg. loss: 0.14459 | avg. IoU: 0.85553
+  [EARLY STOP] counter: 0 | best score: -0.14459
 Epoch 46:
-  [TRAIN DATA] avg. acc: 0.95943 avg. loss: 0.24197 avg. IoU: 0.76951                                                          
-  [VALID DATA] avg. acc: 0.97042 avg. loss: 0.19261 avg. IoU: 0.80624                                                          
-  [EARLY STOP] counter: 0 best score: -0.19261
-  [CHECKPOINT] model_37_-0.2036.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.96991 | avg. loss: 0.17879 | avg. IoU: 0.82440
+  [VALID DATA] avg. acc: 0.97662 | avg. loss: 0.15866 | avg. IoU: 0.83908
+  [EARLY STOP] counter: 1 | best score: -0.14459
 Epoch 47:
-  [TRAIN DATA] avg. acc: 0.95886 avg. loss: 0.23285 avg. IoU: 0.77417                                                          
-  [VALID DATA] avg. acc: 0.96421 avg. loss: 0.20876 avg. IoU: 0.79235                                                          
-  [EARLY STOP] counter: 1 best score: -0.19261
-  [CHECKPOINT] model_37_-0.2036.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.97148 | avg. loss: 0.18597 | avg. IoU: 0.82789
+  [VALID DATA] avg. acc: 0.97684 | avg. loss: 0.15113 | avg. IoU: 0.85276
+  [EARLY STOP] counter: 2 | best score: -0.14459
 Epoch 48:
-  [TRAIN DATA] avg. acc: 0.96546 avg. loss: 0.21589 avg. IoU: 0.78674                                                          
-  [VALID DATA] avg. acc: 0.97040 avg. loss: 0.19454 avg. IoU: 0.80107                                                          
-  [EARLY STOP] counter: 2 best score: -0.19261
-  [CHECKPOINT] model_48_-0.1945.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.97001 | avg. loss: 0.19737 | avg. IoU: 0.80541
+  [VALID DATA] avg. acc: 0.97072 | avg. loss: 0.20551 | avg. IoU: 0.78975
+  [EARLY STOP] counter: 3 | best score: -0.14459
 Epoch 49:
-  [TRAIN DATA] avg. acc: 0.96239 avg. loss: 0.23709 avg. IoU: 0.76725                                                          
-  [VALID DATA] avg. acc: 0.96863 avg. loss: 0.20733 avg. IoU: 0.78698                                                          
-  [EARLY STOP] counter: 3 best score: -0.19261
-  [CHECKPOINT] model_48_-0.1945.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.97165 | avg. loss: 0.17518 | avg. IoU: 0.82926
+  [VALID DATA] avg. acc: 0.97775 | avg. loss: 0.14524 | avg. IoU: 0.85073
+  [EARLY STOP] counter: 4 | best score: -0.14459
 Epoch 50:
-  [TRAIN DATA] avg. acc: 0.96545 avg. loss: 0.21758 avg. IoU: 0.78407                                                          
-  [VALID DATA] avg. acc: 0.97054 avg. loss: 0.19514 avg. IoU: 0.79957                                                          
-  [EARLY STOP] counter: 4 best score: -0.19261
-  [CHECKPOINT] model_48_-0.1945.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.97552 | avg. loss: 0.15973 | avg. IoU: 0.84343
+  [VALID DATA] avg. acc: 0.97647 | avg. loss: 0.16643 | avg. IoU: 0.83533
+  [EARLY STOP] counter: 5 | best score: -0.14459
 Epoch 51:
-  [TRAIN DATA] avg. acc: 0.96390 avg. loss: 0.24991 avg. IoU: 0.76001                                                          
-  [VALID DATA] avg. acc: 0.97056 avg. loss: 0.21213 avg. IoU: 0.78394                                                          
-  [EARLY STOP] counter: 5 best score: -0.19261
-  [CHECKPOINT] model_48_-0.1945.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.97147 | avg. loss: 0.18247 | avg. IoU: 0.82551
+  [VALID DATA] avg. acc: 0.97697 | avg. loss: 0.14706 | avg. IoU: 0.85102
+  [EARLY STOP] counter: 6 | best score: -0.14459
 Epoch 52:
-  [TRAIN DATA] avg. acc: 0.96607 avg. loss: 0.24261 avg. IoU: 0.76370                                                          
-  [VALID DATA] avg. acc: 0.96863 avg. loss: 0.22850 avg. IoU: 0.77637                                                          
-  [EARLY STOP] counter: 6 best score: -0.19261
-  [CHECKPOINT] model_48_-0.1945.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.97533 | avg. loss: 0.15100 | avg. IoU: 0.84910
+  [VALID DATA] avg. acc: 0.97800 | avg. loss: 0.13905 | avg. IoU: 0.85590
+  [EARLY STOP] counter: 0 | best score: -0.13905
 Epoch 53:
-  [TRAIN DATA] avg. acc: 0.95532 avg. loss: 0.23776 avg. IoU: 0.76849                                                          
-  [VALID DATA] avg. acc: 0.96072 avg. loss: 0.22340 avg. IoU: 0.77631                                                          
-  [EARLY STOP] counter: 7 best score: -0.19261
-  [CHECKPOINT] model_48_-0.1945.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.97780 | avg. loss: 0.14028 | avg. IoU: 0.86036
+  [VALID DATA] avg. acc: 0.98024 | avg. loss: 0.13400 | avg. IoU: 0.86213
+  [EARLY STOP] counter: 0 | best score: -0.13400
 Epoch 54:
-  [TRAIN DATA] avg. acc: 0.96427 avg. loss: 0.22077 avg. IoU: 0.78072                                                          
-  [VALID DATA] avg. acc: 0.97070 avg. loss: 0.19856 avg. IoU: 0.79769                                                          
-  [EARLY STOP] counter: 8 best score: -0.19261
-  [CHECKPOINT] model_48_-0.1945.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.97083 | avg. loss: 0.17407 | avg. IoU: 0.83094
+  [VALID DATA] avg. acc: 0.97265 | avg. loss: 0.19260 | avg. IoU: 0.80469
+  [EARLY STOP] counter: 1 | best score: -0.13400
 Epoch 55:
-  [TRAIN DATA] avg. acc: 0.96879 avg. loss: 0.19499 avg. IoU: 0.80486                                                          
-  [VALID DATA] avg. acc: 0.96922 avg. loss: 0.19707 avg. IoU: 0.79723                                                          
-  [EARLY STOP] counter: 9 best score: -0.19261
-  [CHECKPOINT] model_48_-0.1945.pt model_43_-0.1934.pt model_46_-0.1926.pt
+  [TRAIN DATA] avg. acc: 0.97508 | avg. loss: 0.15355 | avg. IoU: 0.85018
+  [VALID DATA] avg. acc: 0.97851 | avg. loss: 0.13550 | avg. IoU: 0.85809
+  [EARLY STOP] counter: 2 | best score: -0.13400
 Epoch 56:
-  [TRAIN DATA] avg. acc: 0.96640 avg. loss: 0.20245 avg. IoU: 0.79475                                                          
-  [VALID DATA] avg. acc: 0.97137 avg. loss: 0.17740 avg. IoU: 0.81303                                                          
-  [EARLY STOP] counter: 0 best score: -0.17740
-  [CHECKPOINT] model_43_-0.1934.pt model_46_-0.1926.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.97286 | avg. loss: 0.16458 | avg. IoU: 0.83262
+  [VALID DATA] avg. acc: 0.97824 | avg. loss: 0.14766 | avg. IoU: 0.84727
+  [EARLY STOP] counter: 3 | best score: -0.13400
 Epoch 57:
-  [TRAIN DATA] avg. acc: 0.96572 avg. loss: 0.21290 avg. IoU: 0.78710                                                          
-  [VALID DATA] avg. acc: 0.96642 avg. loss: 0.22782 avg. IoU: 0.77119                                                          
-  [EARLY STOP] counter: 1 best score: -0.17740
-  [CHECKPOINT] model_43_-0.1934.pt model_46_-0.1926.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.96509 | avg. loss: 0.22972 | avg. IoU: 0.77361
+  [VALID DATA] avg. acc: 0.96769 | avg. loss: 0.24710 | avg. IoU: 0.76376
+  [EARLY STOP] counter: 4 | best score: -0.13400
 Epoch 58:
-  [TRAIN DATA] avg. acc: 0.95848 avg. loss: 0.24044 avg. IoU: 0.76323                                                          
-  [VALID DATA] avg. acc: 0.96534 avg. loss: 0.20985 avg. IoU: 0.78704                                                          
-  [EARLY STOP] counter: 2 best score: -0.17740
-  [CHECKPOINT] model_43_-0.1934.pt model_46_-0.1926.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.97448 | avg. loss: 0.15961 | avg. IoU: 0.83902
+  [VALID DATA] avg. acc: 0.97766 | avg. loss: 0.15479 | avg. IoU: 0.84017
+  [EARLY STOP] counter: 5 | best score: -0.13400
 Epoch 59:
-  [TRAIN DATA] avg. acc: 0.96790 avg. loss: 0.21401 avg. IoU: 0.78461                                                          
-  [VALID DATA] avg. acc: 0.96991 avg. loss: 0.20985 avg. IoU: 0.78874                                                          
-  [EARLY STOP] counter: 3 best score: -0.17740
-  [CHECKPOINT] model_43_-0.1934.pt model_46_-0.1926.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.97192 | avg. loss: 0.17915 | avg. IoU: 0.82182
+  [VALID DATA] avg. acc: 0.97507 | avg. loss: 0.17415 | avg. IoU: 0.81917
+  [EARLY STOP] counter: 6 | best score: -0.13400
 Epoch 60:
-  [TRAIN DATA] avg. acc: 0.96807 avg. loss: 0.21046 avg. IoU: 0.79193                                                          
-  [VALID DATA] avg. acc: 0.96929 avg. loss: 0.20853 avg. IoU: 0.79029                                                          
-  [EARLY STOP] counter: 4 best score: -0.17740
-  [CHECKPOINT] model_43_-0.1934.pt model_46_-0.1926.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.96291 | avg. loss: 0.20226 | avg. IoU: 0.81349
+  [VALID DATA] avg. acc: 0.97313 | avg. loss: 0.16599 | avg. IoU: 0.83790
+  [EARLY STOP] counter: 7 | best score: -0.13400
 Epoch 61:
-  [TRAIN DATA] avg. acc: 0.96218 avg. loss: 0.21405 avg. IoU: 0.78376                                                          
-  [VALID DATA] avg. acc: 0.96881 avg. loss: 0.20773 avg. IoU: 0.78786                                                          
-  [EARLY STOP] counter: 5 best score: -0.17740
-  [CHECKPOINT] model_43_-0.1934.pt model_46_-0.1926.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.96880 | avg. loss: 0.17277 | avg. IoU: 0.83532
+  [VALID DATA] avg. acc: 0.97463 | avg. loss: 0.15653 | avg. IoU: 0.84455
+  [EARLY STOP] counter: 8 | best score: -0.13400
 Epoch 62:
-  [TRAIN DATA] avg. acc: 0.96690 avg. loss: 0.19503 avg. IoU: 0.80378                                                          
-  [VALID DATA] avg. acc: 0.96902 avg. loss: 0.18867 avg. IoU: 0.80241                                                          
-  [EARLY STOP] counter: 6 best score: -0.17740
-  [CHECKPOINT] model_46_-0.1926.pt model_62_-0.1887.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.98017 | avg. loss: 0.12229 | avg. IoU: 0.87727
+  [VALID DATA] avg. acc: 0.98118 | avg. loss: 0.12440 | avg. IoU: 0.87220
+  [EARLY STOP] counter: 0 | best score: -0.12440
 Epoch 63:
-  [TRAIN DATA] avg. acc: 0.96969 avg. loss: 0.18920 avg. IoU: 0.80631                                                          
-  [VALID DATA] avg. acc: 0.97014 avg. loss: 0.19101 avg. IoU: 0.80159                                                          
-  [EARLY STOP] counter: 7 best score: -0.17740
-  [CHECKPOINT] model_63_-0.1910.pt model_62_-0.1887.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.94293 | avg. loss: 0.49062 | avg. IoU: 0.60564
+  [VALID DATA] avg. acc: 0.94679 | avg. loss: 0.50113 | avg. IoU: 0.60590
+  [EARLY STOP] counter: 1 | best score: -0.12440
 Epoch 64:
-  [TRAIN DATA] avg. acc: 0.95071 avg. loss: 0.40096 avg. IoU: 0.64689                                                          
-  [VALID DATA] avg. acc: 0.95732 avg. loss: 0.38910 avg. IoU: 0.66575                                                          
-  [EARLY STOP] counter: 8 best score: -0.17740
-  [CHECKPOINT] model_63_-0.1910.pt model_62_-0.1887.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.97561 | avg. loss: 0.14856 | avg. IoU: 0.85308
+  [VALID DATA] avg. acc: 0.97687 | avg. loss: 0.16284 | avg. IoU: 0.83747
+  [EARLY STOP] counter: 2 | best score: -0.12440
 Epoch 65:
-  [TRAIN DATA] avg. acc: 0.96191 avg. loss: 0.27242 avg. IoU: 0.72993                                                          
-  [VALID DATA] avg. acc: 0.96827 avg. loss: 0.23045 avg. IoU: 0.76935                                                          
-  [EARLY STOP] counter: 9 best score: -0.17740
-  [CHECKPOINT] model_63_-0.1910.pt model_62_-0.1887.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.96179 | avg. loss: 0.25906 | avg. IoU: 0.75232
+  [VALID DATA] avg. acc: 0.96786 | avg. loss: 0.23738 | avg. IoU: 0.76630
+  [EARLY STOP] counter: 3 | best score: -0.12440
 Epoch 66:
-  [TRAIN DATA] avg. acc: 0.96474 avg. loss: 0.19835 avg. IoU: 0.80186                                                          
-  [VALID DATA] avg. acc: 0.96963 avg. loss: 0.18415 avg. IoU: 0.81157                                                          
-2022-05-25 08:16:34,270 ignite.handlers.early_stopping.EarlyStopping INFO: EarlyStopping: Stop training
-  [EARLY STOP] counter: 10 best score: -0.17740
-  [CHECKPOINT] model_62_-0.1887.pt model_66_-0.1842.pt model_56_-0.1774.pt
+  [TRAIN DATA] avg. acc: 0.97303 | avg. loss: 0.16268 | avg. IoU: 0.83323
+  [VALID DATA] avg. acc: 0.97319 | avg. loss: 0.18556 | avg. IoU: 0.80927
+  [EARLY STOP] counter: 4 | best score: -0.12440
+Epoch 67:
+  [TRAIN DATA] avg. acc: 0.97354 | avg. loss: 0.15737 | avg. IoU: 0.83172
+  [VALID DATA] avg. acc: 0.97337 | avg. loss: 0.17875 | avg. IoU: 0.80715
+  [EARLY STOP] counter: 5 | best score: -0.12440
+Epoch 68:
+  [TRAIN DATA] avg. acc: 0.98078 | avg. loss: 0.11190 | avg. IoU: 0.88443
+  [VALID DATA] avg. acc: 0.98140 | avg. loss: 0.11604 | avg. IoU: 0.87790
+  [EARLY STOP] counter: 0 | best score: -0.11604
+Epoch 69:
+  [TRAIN DATA] avg. acc: 0.98051 | avg. loss: 0.11467 | avg. IoU: 0.88164
+  [VALID DATA] avg. acc: 0.98005 | avg. loss: 0.12450 | avg. IoU: 0.87047
+  [EARLY STOP] counter: 1 | best score: -0.11604
+Epoch 70:
+  [TRAIN DATA] avg. acc: 0.96905 | avg. loss: 0.20503 | avg. IoU: 0.80236
+  [VALID DATA] avg. acc: 0.96898 | avg. loss: 0.23743 | avg. IoU: 0.77414
+  [EARLY STOP] counter: 2 | best score: -0.11604
+Epoch 71:
+  [TRAIN DATA] avg. acc: 0.97927 | avg. loss: 0.12007 | avg. IoU: 0.87899
+  [VALID DATA] avg. acc: 0.97867 | avg. loss: 0.13500 | avg. IoU: 0.85989
+  [EARLY STOP] counter: 3 | best score: -0.11604
+Epoch 72:
+  [TRAIN DATA] avg. acc: 0.97740 | avg. loss: 0.14010 | avg. IoU: 0.85711
+  [VALID DATA] avg. acc: 0.97823 | avg. loss: 0.14865 | avg. IoU: 0.84786
+  [EARLY STOP] counter: 4 | best score: -0.11604
+Epoch 73:
+  [TRAIN DATA] avg. acc: 0.97878 | avg. loss: 0.11962 | avg. IoU: 0.87655
+  [VALID DATA] avg. acc: 0.98070 | avg. loss: 0.12294 | avg. IoU: 0.86998
+  [EARLY STOP] counter: 5 | best score: -0.11604
+Epoch 74:
+  [TRAIN DATA] avg. acc: 0.97601 | avg. loss: 0.13054 | avg. IoU: 0.86983
+  [VALID DATA] avg. acc: 0.97954 | avg. loss: 0.13179 | avg. IoU: 0.86339
+  [EARLY STOP] counter: 6 | best score: -0.11604
+Epoch 75:
+  [TRAIN DATA] avg. acc: 0.97467 | avg. loss: 0.16937 | avg. IoU: 0.83523
+  [VALID DATA] avg. acc: 0.97238 | avg. loss: 0.20376 | avg. IoU: 0.80049
+  [EARLY STOP] counter: 7 | best score: -0.11604
+Epoch 76:
+  [TRAIN DATA] avg. acc: 0.98511 | avg. loss: 0.08930 | avg. IoU: 0.90619
+  [VALID DATA] avg. acc: 0.98079 | avg. loss: 0.12637 | avg. IoU: 0.86893
+  [EARLY STOP] counter: 8 | best score: -0.11604
+Epoch 77:
+  [TRAIN DATA] avg. acc: 0.97952 | avg. loss: 0.11874 | avg. IoU: 0.87641
+  [VALID DATA] avg. acc: 0.97760 | avg. loss: 0.14860 | avg. IoU: 0.84705
+  [EARLY STOP] counter: 9 | best score: -0.11604
+Epoch 78:
+  [TRAIN DATA] avg. acc: 0.97924 | avg. loss: 0.12349 | avg. IoU: 0.87465
+2022-05-30 04:14:39,703 ignite.handlers.early_stopping.EarlyStopping INFO: EarlyStopping: Stop training
+  [VALID DATA] avg. acc: 0.97681 | avg. loss: 0.15371 | avg. IoU: 0.84283
+  [EARLY STOP] counter: 10 | best score: -0.11604
+Completed:
+  [TEST  DATA] avg. acc: 0.97981 | avg. loss: 0.13389 | avg. IoU: 0.86370

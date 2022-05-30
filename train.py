@@ -8,7 +8,7 @@ import torch
 from torch import optim
 from ignite.contrib.handlers import ProgressBar, global_step_from_engine
 from ignite.engine import Events, create_supervised_trainer, create_supervised_evaluator
-from ignite.handlers import Checkpoint, EarlyStopping, ModelCheckpoint
+from ignite.handlers import Checkpoint, DiskSaver, EarlyStopping, ModelCheckpoint
 from ignite.metrics import Accuracy, Loss, IoU
 from ignite.metrics.confusion_matrix import ConfusionMatrix
 
@@ -40,6 +40,7 @@ parser.add_argument("--patience", default=10, type=int)
 parser.add_argument("--resume-file", default=None, type=str)
 
 if __name__ == "__main__":
+    torch.manual_seed(0)
     args = parser.parse_args()
 
     assert os.path.exists(args.data_dir)
@@ -71,7 +72,7 @@ if __name__ == "__main__":
     }
     evaluator = create_supervised_evaluator(
         model, metrics=val_metrics, device=args.device)
-    ProgressBar().attach(evaluator, output_transform=lambda x: {'loss': x})
+    ProgressBar().attach(evaluator)
 
     @trainer.on(Events.EPOCH_STARTED)
     def log_epoch_no(_trainer):
@@ -81,14 +82,15 @@ if __name__ == "__main__":
         val_loss = _engine.state.metrics['loss']
         return -val_loss
 
+    early_stopper = None
     if args.early_stop:
         early_stopper = EarlyStopping(
             patience=args.patience, score_function=score_function, trainer=trainer)
 
     model_checkpoint = ModelCheckpoint(
-        args.model_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
+        args.model_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer), require_empty=False)
     encoder_checkpoint = ModelCheckpoint(
-        args.encoder_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer))
+        args.encoder_dir, n_saved=3, score_function=score_function, global_step_transform=global_step_from_engine(trainer), require_empty=False)
 
     @trainer.on(Events.EPOCH_COMPLETED)
     def log_results(_trainer):
@@ -116,15 +118,13 @@ if __name__ == "__main__":
         model_checkpoint(evaluator, to_save={"model": model})
         encoder_checkpoint(evaluator, to_save={"encoder": model.encoder})
 
-    to_save = {"train_dataloader": train_dataloader, "val_dataloader": val_dataloader, "test_dataloader": test_dataloader, "model": model,
-               "optimizer": optimizer, "trainer": trainer, "early_stopper": early_stopper, "model_checkpoint": model_checkpoint, "encoder_checkpoint": encoder_checkpoint}
-
-    if args.resume_file is None:
-        checkpoint = Checkpoint(to_save, args.checkpoint_dir, n_saved=1,
-                                global_step_transform=global_step_from_engine(trainer))
-    else:
+    if args.resume_file is not None:
+        to_save = {"model": model, "optimizer": optimizer, "trainer": trainer}
         checkpoint = torch.load(args.resume_file, map_location=args.device)
         Checkpoint.load_objects(to_load=to_save, checkpoint=checkpoint)
+    to_save = {"model": model, "optimizer": optimizer, "trainer": trainer}
+    checkpoint = Checkpoint(to_save, DiskSaver(args.checkpoint_dir, create_dir=True, require_empty=False), n_saved=1,
+                                global_step_transform=global_step_from_engine(trainer))
 
     def log_test_results(_trainer):
         print("Completed:")
