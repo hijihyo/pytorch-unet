@@ -1,7 +1,7 @@
 astroid @ file:///home/conda/feedstock_root/build_artifacts/astroid_1652111881300/work
 autopep8 @ file:///home/conda/feedstock_root/build_artifacts/autopep8_1635267974115/work
 brotlipy @ file:///home/conda/feedstock_root/build_artifacts/brotlipy_1648854175163/work
-certifi==2021.10.8
+certifi==2023.7.22
 cffi @ file:///home/conda/feedstock_root/build_artifacts/cffi_1606236101993/work
 charset-normalizer @ file:///home/conda/feedstock_root/build_artifacts/charset-normalizer_1644853463426/work
 colorama @ file:///home/conda/feedstock_root/build_artifacts/colorama_1602866480661/work
