@@ -33,7 +33,7 @@ sip==4.19.13
 six @ file:///home/conda/feedstock_root/build_artifacts/six_1620240208055/work
 toml @ file:///home/conda/feedstock_root/build_artifacts/toml_1604308577558/work
 tomli @ file:///home/conda/feedstock_root/build_artifacts/tomli_1644342247877/work
-torch==1.11.0
+torch==2.7.1
 torchdata @ file:///home/conda/feedstock_root/build_artifacts/torchdata_1648036481779/work
 torchmetrics @ file:///home/conda/feedstock_root/build_artifacts/torchmetrics_1651830953557/work
 torchvision==0.12.0
